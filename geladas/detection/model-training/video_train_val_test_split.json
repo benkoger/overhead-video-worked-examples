@@ -1,0 +1,42 @@
+{
+    "train": [
+        "DJI_0002 (2).mp4",
+        "DJI_0002.mp4",
+        "DJI_0003 (2).mp4",
+        "DJI_0003.mp4",
+        "DJI_0004.mp4",
+        "DJI_0005.mp4",
+        "DJI_0036 (1).MOV",
+        "DJI_0037.MOV",
+        "DJI_0038.MOV",
+        "DJI_0044.mp4",
+        "DJI_0053.MOV",
+        "DJI_0072.mp4",
+        "DJI_0073.mp4",
+        "DJI_0208.mp4",
+        "DJI_0209.mp4",
+        "DJI_0210.mp4",
+        "DJI_0362.MOV",
+        "DJI_0363.MOV",
+        "DJI_0364.MOV",
+        "DJI_0365.MOV"
+    ],
+    "validation": [
+        "DJI_0007.mp4",
+        "DJI_0008.mp4",
+        "DJI_0009.mp4",
+        "DJI_0010.mp4",
+        "DJI_0194.mp4",
+        "DJI_0195.mp4",
+        "DJI_0196.mp4"
+    ],
+    "test": [
+        "DJI_0006.mp4",
+        "DJI_0204.mp4",
+        "DJI_0205.mp4",
+        "DJI_0206.mp4",
+        "DJI_0213.mp4",
+        "DJI_0214.mp4",
+        "DJI_0215.mp4"
+    ]
+}

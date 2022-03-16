@@ -1,3 +1,6 @@
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 */local-paths.json
+*.pyc
+ungulates/detection/model-training/output/*
+geladas/detection/model-training/output/*

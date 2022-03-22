@@ -501,7 +501,7 @@ def finalize_track(track):
     
     """
     track['track'] = np.stack(track['track'])
-    track['pos_index'] = np.stack(track['pos_index'])
+    track['pos_index'] = np.expand_dims(np.stack(track['pos_index']), 1)
     if 'size' in track:
         track['size'] = np.stack(track['size'])
     

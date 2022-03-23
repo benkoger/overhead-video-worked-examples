@@ -3,7 +3,11 @@ import sys
 # To see koger_general_functions
 sys.path.append('/home/golden/coding/drone-tracking/code/functions')
 import koger_general_functions as kgf
-import gdal
+try:
+    import gdal
+except ImportError:
+    print("Warning: importing 'mapping_funtions.py' without having installed gdal.")
+    print("Will throw error if using functions that require gdal.")
 import cv2
 import glob
 import pandas as pd

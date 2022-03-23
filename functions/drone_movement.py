@@ -260,3 +260,77 @@ def create_gt_segment_dicts(frame_folders_root, flight_logs,
                               'save': save})
     
     return segment_dicts
+
+def process_new_anchor(im_file):
+    """ Extract and return image and keypoint image for new anchor frame.
+    
+    Args:
+        im_file: full path to image file
+    
+    Returns grayscale image and keypoint info.
+    """
+    raw_im = cv2.imread(im_file)
+    gray_im = cv2.cvtColor(raw_im, cv2.COLOR_BGR2GRAY)
+    
+    image_features = get_image_keypoints(gray_im)
+    
+    return gray_im, image_features
+
+def get_anchor_frames_without_log(frame_files, inlier_threshold=100,
+                                 max_pseudo_anchors=7, verbose=True):
+    """ Choose anchor frames to use for SfM mapping.
+    
+    Chooses anchor frames based on quality of local movement estimates (quantified
+    by number of valid features to lst anchor) instead of from drone log information.
+    
+    Args:
+        frame_files: list of full paths to all frames in observation (sorted)
+        inlier_threshold: minimum number of points used to calculate warp
+            to last (pseudo) anchor before start using next (pseudo) anchor
+        max_pseudo_anchors: how many pseudo anchors to use before adding new
+            anchor. (To ensure good results, should be less than 10 because 
+            that is the default for the actual drone movement calculation)
+            
+    Return list of anchor frame files and warps between them (to check quality)
+        """
+
+    anchor_files = []
+    final_warps = []
+
+    anchor_files.append(frame_files[0])
+    # The frame and features of current (pseudo) anchor frame
+    a_frame, a_features = process_new_anchor(frame_files[0])
+    # Number of pseudo anchors already used in this anchor segment
+    num_pseudo_anchors = 0
+    # Warp used for the previous frame (save this one, not the warp assosiated
+    # with the first frame that doesn't have enough features)
+    last_warp = None
+    # Warp to get from current pseudo anchor frame back to the anchor frame
+    base_transform = np.eye(3)
+
+    for file_num, im_focal_file in enumerate(frame_files):
+        if verbose:
+            if file_num % 2000 == 0:
+                print(f"{file_num} of {len(frame_files)} frames processed.",
+                      f" {len(anchor_files)} anchors saved.")
+        im_focal = cv2.imread(im_focal_file)
+        im_focal_gray = cv2.cvtColor(im_focal, cv2.COLOR_BGR2GRAY)
+        warp, num_inliers = get_movement_matrix(a_frame, im_focal_gray, a_features)
+        warp = np.matmul(base_transform, warp)
+        if num_inliers < inlier_threshold:
+            a_frame, a_features = process_new_anchor(frame_files[file_num-1])
+            if num_pseudo_anchors < max_pseudo_anchors:
+                num_pseudo_anchors += 1
+                base_transform = last_warp
+            else:
+                anchor_files.append(frame_files[file_num-1])
+                final_warps.append(np.copy(last_warp))
+                base_transform = np.eye(3)
+                num_pseudo_anchors = 0
+            continue
+        last_warp = warp
+    # Add last frame no matter what
+    anchor_files.append(frame_files[-1])
+    final_warps.append(np.eye(3))
+    
+    return anchor_files, final_warps

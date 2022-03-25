@@ -1,13 +1,11 @@
-import numpy as np
+import os
+import time
+
 import cv2
 import matplotlib.pyplot as plt
-import time
-import os
+import numpy as np
+import pandas as pd
 
-
-import sys
-# To see koger_general_functions
-sys.path.append('/home/golden/coding/drone-tracking/code/functions')
 import koger_general_functions as kgf
 import mapping_functions as kmap
 
@@ -294,10 +292,12 @@ def get_anchor_frames_without_log(frame_files, inlier_threshold=100,
     Return list of anchor frame files and warps between them (to check quality)
         """
 
-    anchor_files = []
-    final_warps = []
+    anchor_files = [] # list of anchor filenames
+    anchor_obs_inds = [] # list of the observation index for each anchor
+    final_warps = [] # list of warps from each anchor frame to the last
 
-    anchor_files.append(frame_files[0])
+    anchor_files.append(os.path.basename(frame_files[0]))
+    anchor_obs_inds.append(0)
     # The frame and features of current (pseudo) anchor frame
     a_frame, a_features = process_new_anchor(frame_files[0])
     # Number of pseudo anchors already used in this anchor segment
@@ -323,14 +323,19 @@ def get_anchor_frames_without_log(frame_files, inlier_threshold=100,
                 num_pseudo_anchors += 1
                 base_transform = last_warp
             else:
-                anchor_files.append(frame_files[file_num-1])
+                anchor_files.append(os.path.basename(frame_files[file_num-1]))
                 final_warps.append(np.copy(last_warp))
+                anchor_obs_inds.append(file_num-1)
                 base_transform = np.eye(3)
                 num_pseudo_anchors = 0
             continue
         last_warp = warp
     # Add last frame no matter what
-    anchor_files.append(frame_files[-1])
+    anchor_files.append(os.path.basename(frame_files[-1]))
+    anchor_obs_inds.append(file_num)
     final_warps.append(np.eye(3))
     
-    return anchor_files, final_warps
+    anchor_info = pd.DataFrame(list(zip(anchor_files, anchor_obs_inds)),
+                               columns=['filename', 'obs_ind'])
+    
+    return anchor_info, final_warps

@@ -1,18 +1,17 @@
+import copy
+import glob
+
+import cv2
 import numpy as np
-import sys
-# To see koger_general_functions
-sys.path.append('/home/golden/coding/drone-tracking/code/functions')
+import pandas as pd
+
 import koger_general_functions as kgf
+
 try:
     import gdal
 except ImportError:
     print("Warning: importing 'mapping_funtions.py' without having installed gdal.")
     print("Will throw error if using functions that require gdal.")
-import cv2
-import glob
-import pandas as pd
-import copy
-
 
 def get_uv(xyz_raw, pmatrix, offset):
     '''

@@ -165,7 +165,7 @@ class TrackCorrectionGUI():
                           )
             else:
                 cv2.circle(image, 
-                           (int(point[1] * self.factor), int((image.shape[0] - point[0])*self.factor)), 
+                           (int(point[1] * self.factor), int(image.shape[0] - point[0]*self.factor)), 
                            50, (50, 0, 200), 1)
 
             rel_framecount = self.framecount - self.focal_tracks[self.focaltrackcount]['first_frame']

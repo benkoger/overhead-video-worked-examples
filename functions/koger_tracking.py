@@ -1,4 +1,7 @@
+import os
+
 import numpy as np
+from scipy.optimize import linear_sum_assignment
 
 def _get_boxes_center(boxes, frame_width=None, frame_height=None):
     # Need frame_width and frame_height if boxes are scaled 0 to 1 and
@@ -871,12 +874,15 @@ def find_tracks(first_frame_ind, positions, params,
                 if tracks_file:
                     np.save(tracks_file, np.array(raw_track_list, dtype=object))
         if len(active_list) == 0:
+            class_labels = None
+            if detection_dicts:
+                if "pred_classes" in detection_dicts[frame_ind].keys():
+                    class_labels = detection_dicts[frame_ind]['pred_classes']
             #No existing tracks to connect to
             #Every point in next frame must start a new track
             raw_track_list = add_all_points_as_new_tracks(
                 raw_track_list, frame_ind, positions[frame_ind], 
-                class_labels=detections_dicts[frame_ind]['pred_classes'],
-                noise=new_track_noise
+                class_labels=class_labels, noise=new_track_noise
             )
             continue
 

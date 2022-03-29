@@ -224,8 +224,9 @@ def get_segment_drone_movement(segment_dict):
     
     return segment_transforms, num_inliers_list, used_pgt_seg_inds
 
-def create_gt_segment_dicts(frame_folders_root, flight_logs, 
-                            output_folder=None, save=False):
+def create_gt_segment_dicts(frame_folders_root=None, flight_logs=None, 
+                            output_folder=None, save=False, frame_files=None,
+                           anchor_info=None):
     """Create list of dicts where each dict contains all image files for that gt segment.
     
     Args:
@@ -233,20 +234,23 @@ def create_gt_segment_dicts(frame_folders_root, flight_logs,
         flight_logs: clean flight logs for observation
         output_folder: where to save transform info when segment is processed
         save: when processed should transform info be saved
-    """
-    
-    
+        frame_files: list of sorted frame files (only if frame_folders_root is None)
+        anchor_info: dataframe with columns 'filename', 'obs_ind' (only if flight_logs is None)
+    """  
     if output_folder:
         try:
             os.makedirs(output_folder)    
         except FileExistsError:
             print('Warning, {} already exists'.format(output_folder))
     
-    gtruth_obs_indexes, _ = kmap.get_groundtruth_obs_indexes(flight_logs, 
-                                                             frame_folders_root
-                                                            )
-    obs_image_files = kgf.get_observation_frame_files(frame_folders_root)
-
+    if (frame_folders_root is not None) and (flight_logs is not None):
+        gtruth_obs_indexes, _ = kmap.get_groundtruth_obs_indexes(flight_logs, 
+                                                                 frame_folders_root
+                                                                )
+        obs_image_files = kgf.get_observation_frame_files(frame_folders_root)
+    elif (frame_files is not None) and (anchor_info is not None):
+        gtruth_obs_indexes = list(anchor_info['obs_ind'])
+        obs_image_files = frame_files
     segment_dicts = []
     # -1 because we want segments between grountruth points (so n-1 segments for n grountruths)
     for gtruth_index, gtruth_obs_index in enumerate(gtruth_obs_indexes[:-1]):

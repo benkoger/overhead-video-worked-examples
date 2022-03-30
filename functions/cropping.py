@@ -1,13 +1,14 @@
 import cv2
 import numpy as np
+import os
 
 import koger_general_functions as kgf
 
 def get_padded_crop(frame, center, crop_size):
     """Crop square around center in frame with zero padding where nessisary.
-    
+
     Note: crop_size must be even.
-    
+
     """
     if crop_size % 2 == 1:
         raise ValueError("Only even crop sizes excepted")
@@ -20,15 +21,15 @@ def get_padded_crop(frame, center, crop_size):
         box[0] = 0
     box[1] = int(center[1] - crop_size / 2)
     if box[1] < 0:
-        box_padding[1] = -box[1] 
+        box_padding[1] = -box[1]
         box[1] = 0
     box[2] = int(frame.shape[0] - center[0] + crop_size / 2)
     if box[2] > frame.shape[0]:
-        box_padding[2] = frame.shape[0] - box[2] 
+        box_padding[2] = frame.shape[0] - box[2]
         box[2] = frame.shape[0]
     box[3] = int(center[1] + crop_size / 2)
     if box[3] > frame.shape[1]:
-        box_padding[3] = frame.shape[1] - box[3] 
+        box_padding[3] = frame.shape[1] - box[3]
         box[3] = frame.shape[1]
     crop = frame[box[0]:box[2], box[1]:box[3]]
     if not all(padding is None for padding in box_padding):
@@ -41,22 +42,22 @@ def get_padded_crop(frame, center, crop_size):
 
 def extract_crops(crop_info, return_crops=False):
     """ Extract and save crop at specified locations in specified frame.
-    
+
     Pad black if position is close to edge of the frame.
-    
+
     Args:
         crop_info: dict containing:
             'frame_file': path to image file
-            'centers': list of positons in frame (same coordinates as recorded in track) 
+            'centers': list of positons in frame (same coordinates as recorded in track)
             'track_nums': track numbers in frame in same order as centers
             'obs_ind': the observation index (frame number in simple case)
             'crop_size': length and width of crop
             'save_folders': path to folders to save crop, if None don't save
         return_crops: If True, return crops
-            
+
     return crops extracted from the frame
     """
-    
+
     frame = cv2.imread(crop_info['frame_file'])
     centers = crop_info['centers']
     track_nums = crop_info['track_nums']
@@ -75,16 +76,16 @@ def extract_crops(crop_info, return_crops=False):
     if return_crops:
         return crops
 
-                
+
 def create_observation_crop_dicts(frame_files, tracks_file, crop_size, save_folder,
                                   crops_per_subfolder=None):
     """ Create the 'crop_info' dicts used by extract_crop for all tracks in observation.
-    
+
     Args:
         frame_files: sorted list of full paths to all frames in observation
         tracks_file: full path to file containing list of tracks in observation
         crop_size: size of crops to extract from frame
-        save_folder: where to save crops (within this folder each track will have 
+        save_folder: where to save crops (within this folder each track will have
             a subfolder. Each track folder may also have multiple subfolders so
             a single folder isn't overwhelmed with files for long tracks which
             could have hundred thousand+ crops)
@@ -92,11 +93,11 @@ def create_observation_crop_dicts(frame_files, tracks_file, crop_size, save_fold
             before creating a new one. If None, store all crops in single sub
             folder
         """
-    
+
     tracks_list = np.load(tracks_file, allow_pickle=True)
-    
+
     crop_dicts = []
-    
+
     for obs_ind, frame_file in enumerate(frame_files):
         positions = [] # current positions of tracks in frame
         track_nums = [] # track number of tracks in frame
@@ -117,10 +118,10 @@ def create_observation_crop_dicts(frame_files, tracks_file, crop_size, save_fold
                     save_folder, f"track-{track_num}", f"segment-{subfolder}")
                 os.makedirs(crop_save_folder, exist_ok=True)
                 save_folders.append(crop_save_folder)
-                                                
+
         if len(positions) == 0:
             continue
-        
+
         crop_dict = {'frame_file': frame_file,
                      'centers': positions,
                      'track_nums': track_nums,
@@ -129,5 +130,5 @@ def create_observation_crop_dicts(frame_files, tracks_file, crop_size, save_fold
                      'save_folders': save_folders
                     }
         crop_dicts.append(crop_dict)
-        
+
     return crop_dicts

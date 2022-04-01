@@ -8,7 +8,7 @@ import pandas as pd
 import koger_general_functions as kgf
 
 try:
-    import gdal
+    from osgeo import gdal
 except ImportError:
     print("Warning: importing 'mapping_funtions.py' without having installed gdal.")
     print("Will throw error if using functions that require gdal.")
@@ -1052,6 +1052,49 @@ def fill_with_min(array, value=-10000):
     array = np.where(array == value, min_val, array)
     return array
 
+def get_ungulates_frame_shape(supress_warning=False):
+    """ Return the standard frame height for our particular ungulates worked example."""
+    if not supress_warning:
+        print("Warning: using 'get_ungulates_frame_height.' This function ", 
+              "returns a hard coded value that is correct for the standard ",
+              "ungulate worked example videos.")
+    return (2160, 4096, 3)
+
+def get_pix4d_info(map_folder, observation_name):
+    """ Load various of the files produced by Pix4D that are required map projection."""
+
+    pix4d_info = {}
+    
+    pmatrix_file = os.path.join(map_folder, "1_initial", "params",
+                                f"{observation_name}_pmatrix.txt")
+    pix4d_info['pmatrices'] = kmap.create_pmatrix_dicts(pmatrix_file)
+    
+    offset_file = os.path.join(map_folder, "1_initial", "params",
+                           f"{observation_name}_offset.xyz")
+    pix4d_info['offset'] = kmap.load_map_offset(offset_file)
+    
+    geotif_dsm_file =  os.path.join(map_folder, "3_dsm_ortho", "1_dsm",
+                                f"{observation_name}_dsm.tif")
+    dsm_gtif = gdal.Open(geotif_dsm_file)
+    
+    # Get information for converting between utm and raster coordinates
+    dsm_transform = dsm_gtif.GetGeoTransform()
+    pix4d_info['x_origin'] = dsm_transform[0]
+    pix4d_info['y_origin'] = dsm_transform[3]
+    pix4d_info['pixel_width'] = dsm_transform[1]
+    pix4d_info['pixel_height'] = dsm_transform[5]
+    
+    geotif_dtm_file = os.path.join(map_folder, "3_dsm_ortho", "extras", "dtm", 
+                                   f"{observation_name}_dtm.tif")             
+    dtm_gtif = gdal.Open(geotif_dtm_file)
+    dtm = dtm_gtif.GetRasterBand(1).ReadAsArray()
+    dtm = kmap.fill_with_min(dtm)
+    pix4d_info['elevation_r'] = cv2.resize(dtm, 
+                                           (dsm_gtif.RasterXSize, 
+                                            dsm_gtif.RasterYSize), 
+                                           interpolation=cv2.INTER_LINEAR)
+    
+    return pix4d_info
                
         
     

@@ -224,38 +224,40 @@ def get_segment_drone_movement(segment_dict):
     
     return segment_transforms, num_inliers_list, used_pgt_seg_inds
 
-def create_gt_segment_dicts(frame_folders_root=None, flight_logs=None, 
-                            output_folder=None, save=False, frame_files=None,
-                           anchor_info=None):
+def create_gt_segment_dicts(pmatrix_list, frame_folders_root=None,
+                            output_folder=None, save=False, frame_files=None):
     """Create list of dicts where each dict contains all image files for that gt segment.
     
     Args:
+        pmatrix_list: list of pmatrix dicts of all anchors
+            Note: this is just to get names of anchors actually used by SfM
+            software in the output map versus input file names. Could be changed 
+            to just pass a list of names.
         frame_folders_root: folder containing the observations frames
-        flight_logs: clean flight logs for observation
         output_folder: where to save transform info when segment is processed
         save: when processed should transform info be saved
         frame_files: list of sorted frame files (only if frame_folders_root is None)
-        anchor_info: dataframe with columns 'filename', 'obs_ind' (only if flight_logs is None)
     """  
     if output_folder:
         try:
             os.makedirs(output_folder)    
         except FileExistsError:
             print('Warning, {} already exists'.format(output_folder))
+    if not frame_files:
+        if frame_folders_root:
+            frame_files = kgf.get_observation_frame_files(frame_folders_root)
+        else:
+            raise ValueError("create_gt_segment_dicts must be given " 
+                             "'frame_files' or 'frame_folders_root'. Both None")
     
-    if (frame_folders_root is not None) and (flight_logs is not None):
-        gtruth_obs_indexes, _ = kmap.get_groundtruth_obs_indexes(flight_logs, 
-                                                                 frame_folders_root
-                                                                )
-        obs_image_files = kgf.get_observation_frame_files(frame_folders_root)
-    elif (frame_files is not None) and (anchor_info is not None):
-        gtruth_obs_indexes = list(anchor_info['obs_ind'])
-        obs_image_files = frame_files
+    gtruth_obs_indexes = kmap.get_anchor_obs_indexes(pmatrix_list, frame_files)
+        
     segment_dicts = []
-    # -1 because we want segments between grountruth points (so n-1 segments for n grountruths)
+    # -1 because we want segments between grountruth points 
+    # (so n-1 segments for n grountruths)
     for gtruth_index, gtruth_obs_index in enumerate(gtruth_obs_indexes[:-1]):
         last_seg_ind = gtruth_obs_indexes[gtruth_index+1]
-        segment_im_files = obs_image_files[gtruth_obs_index:last_seg_ind+1]
+        segment_im_files = frame_files[gtruth_obs_index:last_seg_ind+1]
         segment_dicts.append({'segment_im_files': segment_im_files, 
                               'output_folder': output_folder, 
                               'segment_number': gtruth_index, 

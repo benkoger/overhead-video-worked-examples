@@ -18,7 +18,7 @@ def get_observation_frame_files(raw_frame_folder):
 
     raw_frame_folder -- full path to folder containing one folder for each video clip in observation
     each clip folder contains all the frames in that clip.  The folder also contains a 
-    .csv file that has the same name as the folder. This csv file has the first and last
+    .csv file that has the same name as the folder. This csv file has the first and last (exclusive)
     frame that is used in the observation for each video clip. 
 
     Assumes file name of form *_first-sort_whatever_second-sort_last-sort.jpg
@@ -43,7 +43,9 @@ def get_observation_frame_files(raw_frame_folder):
         if last_index == 0:
             continue
         
-        frames = glob.glob(raw_frame_folder + '/' + observation_df.loc[row, 'video_name'] + '/*.jpg')
+        frames = glob.glob(
+            os.path.join(raw_frame_folder, observation_df.loc[row, 'video_name'], "*.jpg")
+        )
         frames.sort()
             
         if last_index == -1:

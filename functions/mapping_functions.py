@@ -1,5 +1,6 @@
 import copy
 import glob
+import os
 
 import cv2
 import numpy as np
@@ -46,29 +47,37 @@ def get_xyz_proj(uv, inv_m, p4, mu, offset):
     return xyz
 
 
-def utm_to_raster(x_utm, y_utm, x_origin, y_origin, pixel_width, pixel_height, image_scale):
+def utm_to_raster(x_utm, y_utm, raster_info, image_scale=1.0):
     '''
     Transforms from utm map coordinates to raster map coordinates
 
-    x_utm: x coordinate in utm
-    y_utm: y coordinate in utm
-    x_origin: of raster image in utm 
-    y_origin: of raster image in utm
-    pixel_height: of raster image in utm
-    pixel_width: of raster image in utm
-    image_scale: if the raster image being used has been scaled from the original image
-                 image scale of .5 means that the map is being used at
-                 .5 w .5 h compared to original
-
+    Args:
+        x_utm: x coordinate in utm
+        y_utm: y coordinate in utm
+        raster_info: dictionary of with keys:
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
+        image_scale: if the raster image being used has been scaled from the original image
+                     image scale of .5 means that the map is being used at
+                     .5 w .5 h compared to original
     '''
     if np.isnan(x_utm) or np.isnan(y_utm):
         return((np.nan, np.nan))
+    
+    x_origin = raster_info['x_origin']
+    y_origin = raster_info['y_origin']
+    pixel_width = raster_info['pixel_width']
+    pixel_height = raster_info['pixel_height']
+    
     x_raster = int(((x_utm - x_origin) / pixel_width) * image_scale)  
     y_raster = int(((y_utm - y_origin) / pixel_height) * image_scale)
     return((x_raster, y_raster))
 
 
-def utm_to_raster_track(track_utm, x_origin, y_origin, pixel_width, pixel_height, image_scale):
+def utm_to_raster_track(track_utm, x_origin, y_origin, 
+                        pixel_width, pixel_height, image_scale=1):
 
     '''
     Transforms from utm map coordinates to raster map coordinates for a given track
@@ -91,10 +100,24 @@ def utm_to_raster_track(track_utm, x_origin, y_origin, pixel_width, pixel_height
 
 
 
-def raster_to_utm(x_raster, y_raster, x_origin, y_origin, pixel_width, pixel_height):
+def raster_to_utm(x_raster, y_raster, raster_info):
     '''
     opposite of utm_to_raster
+    
+    Args:
+        x_raster: x coordinate in raster
+        y_raster: y coordinate in raster
+        raster_info: dictionary of with keys:
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
     '''
+    x_origin = raster_info['x_origin']
+    y_origin = raster_info['y_origin']
+    pixel_width = raster_info['pixel_width']
+    pixel_height = raster_info['pixel_height']
+    
     x_utm = ((x_raster * pixel_width) + x_origin)
     y_utm = (y_raster * pixel_height) + y_origin
     return((x_utm, y_utm))
@@ -153,29 +176,30 @@ def correct_pmatrix(raw_pmatrix_dict, movement_matrix, mu_est):
     
 
 
-def from_image_to_map(uv, z_guess, pmatrix_dict, offset, elevation_map, 
-    max_guesses, correct_threshold, pixel_width, pixel_height, x_origin, y_origin, 
-    object_height=1):
+def from_image_to_map(uv, z_guess, pmatrix_dict, pix4d, max_guesses, 
+                      correct_threshold, object_height=1):
     
     '''
     The project image coordinate on to map as the intersection between the 
     projection ray from camera through image point and the ground.  Iteritively
     searches for this point
 
-    uv: point in image
-    z_guess: where to start looking for ground
-    pmatrix_dict: must_contain inv_mmatrix (inverse of the first three columns of pmatrix)
-                  and p4 (fourth column of pmatrix)  
-    offset: from pix4d
-    elevation_map: elevation raster plot of map area
-    max_guesses: how many iterations to search along projection ray before returning estimate
-    correct_threshold: if the distance between the point on the projection ray and the ground is 
-                       within this threshold stop seraching and return point
-    pixel_width: pixel width of pixels in elevation raster in utm units
-    pixel_height: like pixel width
-    x_origin: origin of elevation raster in utm units
-    y_origin: like x_origin
-    object_height: expected height of object above ground
+    Args:
+        uv: point in image
+        z_guess: where to start looking for ground
+        pmatrix_dict: must_contain inv_mmatrix (inverse of the first three columns of pmatrix)
+            and p4 (fourth column of pmatrix)  
+        pix4d: dictionary of with keys:
+            offset: camera coordinates offset
+            elevation_r: elevation raster plot of map area
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
+        max_guesses: how many iterations to search along projection ray before returning estimate
+        correct_threshold: if the distance between the point on the projection ray and the ground is 
+            within this threshold stop seraching and return point
+        object_height: expected height of object above ground
 
     returns: xy coordinates in utm, if the point is found, the mu value for the guess, and the corresponding real elevation 
     '''
@@ -190,16 +214,15 @@ def from_image_to_map(uv, z_guess, pmatrix_dict, offset, elevation_map,
     orig_z_guess = z_guess
     
     while not found_point:
-        xyz = get_xyz_proj(uv, pmatrix_dict['inv_mmatrix'], 
-                           pmatrix_dict['p4'], z_guess, offset)
-        x_rast, y_rast = utm_to_raster(xyz[0], xyz[1], x_origin, y_origin, 
-                                       pixel_width, pixel_height, 
-                                       image_scale=1.0)
-        x_rast = min(x_rast, elevation_map.shape[1]-1)
+        xyz = get_xyz_proj(uv, pmatrix_dict['inv_mmatrix'], pmatrix_dict['p4'], 
+                           z_guess, pix4d['offset'])
+        x_rast, y_rast = utm_to_raster(xyz[0], xyz[1], pix4d)
+        # Force onto raster if projected off
+        x_rast = min(x_rast, pix4d['elevation_r'].shape[1]-1)
         x_rast = max(x_rast, 0)
-        y_rast = min(y_rast, elevation_map.shape[0]-1)
+        y_rast = min(y_rast, pix4d['elevation_r'].shape[0]-1)
         y_rast = max(y_rast, 0)
-        elevation = elevation_map[y_rast, x_rast]
+        elevation = pix4d['elevation_r'][y_rast, x_rast]
         z_diff = xyz[2] + animal_height - elevation
 
         if guess_count > max_guesses:
@@ -224,16 +247,10 @@ def from_image_to_map(uv, z_guess, pmatrix_dict, offset, elevation_map,
             last_neg_guess = z_guess
             z_guess = new_guess
         guess_count += 1
-    x_utm, y_utm = raster_to_utm(x_rast, y_rast, 
-                                 x_origin, y_origin, 
-                                 pixel_width, pixel_height)
+    x_utm, y_utm = raster_to_utm(x_rast, y_rast, pix4d)
     
     if not found_point:
         print('big change', orig_z_guess, z_guess)
-    
-    
-    
-#     print('uv:', uv, 'p4:', pmatrix_dict['p4'], x_utm, 'y:', y_utm, 'fp:', found_point, 'z:', z_guess, 'el:', elevation)
         
     return (x_utm, y_utm, found_point, z_guess, elevation)
 
@@ -285,6 +302,33 @@ def create_pmatrix_dicts(pmatrix_file, big_map=False, simple_sort=False):
 
     return pmatrix_list
 
+def get_anchor_obs_indexes(pmatrix_list, frame_files=None, frame_folders_root=None):
+    """
+    Return list of observation index of each anchor.
+    
+    Uses frame_files if not None.
+    
+    pmatrix_list: list of pmatrix dicts of all anchors
+    frame_files: list of all (sorted) frame files in observation
+    frame_folders_root: path to folder containing all the frame folders 
+        for observation. In format expected by 'kgf.get_observation_frame_files'
+    """
+    if not frame_files and not frame_folders_root:
+        raise ValueError("Must provide 'frame_files' or 'frames_folder'")
+    if not frame_files:
+        frame_files = kgf.get_observation_frame_files(frame_folders_root)
+        
+    last_obs_ind = 0
+    anchor_obs_inds = []
+    for pmatrix in pmatrix_list:
+        for cur_ind, file in enumerate(frame_files[last_obs_ind:]):
+            if pmatrix['image_name'] in file:
+                anchor_obs_inds.append(last_obs_ind + cur_ind)
+                last_obs_ind += cur_ind
+                break
+    return anchor_obs_inds
+    
+
 def get_groundtruth_obs_indexes(flight_logs, frame_folders_root, for_test=False, 
                                 use_old_method=False):
     '''
@@ -298,6 +342,7 @@ def get_groundtruth_obs_indexes(flight_logs, frame_folders_root, for_test=False,
     use_old_method: boolean, True is should use old function to
         calculate this
     '''
+    print("Consider switching to 'get_anchor_obs_indexes'")
     
     if use_old_method:
         gtruth_obs_indexes, gtruth_frame_names = get_groundtruth_obs_indexes_old(
@@ -752,11 +797,9 @@ def get_track_position_at_obs_ind(track, obs_ind, image_shape):
     
     
 
-def get_obs_ind_utms(tracks, obs_ind, rotation_matrix, pmatrix_dict, 
-                               offset, elevation_r, mu_est, max_guesses, 
-                               correct_threshold, pixel_width, pixel_height,
-                               x_origin, y_origin, image_shape, bias=None, 
-                               object_height=1):
+def get_obs_ind_utms(tracks, obs_ind, rotation_matrix, pmatrix_dict, pix4d, 
+                     mu_est, max_guesses, correct_threshold, image_shape, 
+                     bias=None, object_height=1):
     """ Calculate utm positions for every track at obs_ind.
     
     Return num tracks by two array. nan if track isn't present
@@ -765,63 +808,52 @@ def get_obs_ind_utms(tracks, obs_ind, rotation_matrix, pmatrix_dict,
         tracks: list of track dicts
         obs_ind: observation index
         rotation_matrix: describes how points should be rotated from ground truth
-        pmatrix_dict: must_contain inv_mmatrix (inverse of the first three columns of pmatrix)
-                      and p4 (fourth column of pmatrix)  
-        offset: from pix4d
-        elevation_r: elevation raster plot of map area
+        pmatrix_dict: must contain inv_mmatrix (inverse of the first three columns of pmatrix)
+            and p4 (fourth column of pmatrix). Corrected for this frame
+            from the last anchor frame
+        pix4d: dictionary of with keys:
+            offset: camera coordinates offset
+            elevation_r: elevation raster plot of map area
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
         mu_est: where to start looking for ground
         max_guesses: how many iterations to search along projection ray before returning estimate
         correct_threshold: if the distance between the point on the projection ray and the ground is 
                            within this threshold stop seraching and return point
-        pixel_width: pixel width of pixels in elevation raster in utm units
-        pixel_height: like pixel width
-        x_origin: origin of elevation raster in utm units
-        y_origin: like x_origin
         bias: how much to modify utm points (known error between segments for instance)
         object_height: expected height of object above ground
     """
     
     utms = []
-        
-    num_tracks_in_frame = 0
-    new_mu_sum = 0
+    mus = []
     
     if bias is None:
         bias = np.zeros((len(tracks), 2), dtype=float)
     
     for track_ind, track in enumerate(tracks):
-
         track_uv = get_track_position_at_obs_ind(track, obs_ind, image_shape)
-            
         if track_uv is False:
             # Track isn't present in this frame so just add nan
             utms.append(np.array([np.nan, np.nan]))
             continue
-                
-        num_tracks_in_frame += 1
 
         track_uv_rot = np.matmul(rotation_matrix, track_uv)
         
         
             
-        x_utm, y_utm, found_point, mu, elevation = from_image_to_map(track_uv_rot, 
-                                                                          mu_est, 
-                                                                          pmatrix_dict, 
-                                                                          offset, elevation_r, 
-                                                                          max_guesses, 
-                                                                          correct_threshold, 
-                                                                          pixel_width, 
-                                                                          pixel_height, 
-                                                                          x_origin, y_origin,
-                                                                          object_height)
+        x_utm, y_utm, _, mu, _ = from_image_to_map(track_uv_rot, mu_est, 
+                                                   pmatrix_dict, pix4d, 
+                                                   max_guesses, correct_threshold, 
+                                                   object_height)
         
         utms.append(np.array([x_utm, y_utm]) + bias[track_ind])
-
-        new_mu_sum += mu
+        mus.append(mu)
 
     utms = np.vstack(utms)
-    if num_tracks_in_frame != 0:
-        new_mu = new_mu_sum / num_tracks_in_frame
+    if mus:
+        new_mu = np.mean(mus)
     else:
         new_mu = 0
 
@@ -859,59 +891,56 @@ def utm_to_raster_for_step(utms, x_origin, y_origin, pixel_width,
     
     return raster_points
 
-def calculate_obs_ind_utms_in_segment(tracks, obs_ind, gt_index, segment_step,
-                                    pmatrix_list, segment_movements_list,
-                                    mu_est, offset, elevation_r, max_guesses,
-                                    correct_threshold, pixel_width, pixel_height,
-                                    x_origin, y_origin, image_shape, bias=None,
-                                    object_height=1
-                                   ):
+def calculate_obs_ind_utms_in_segment(tracks, obs_ind, anchor_index, segment_step,
+                                      pix4d, segment_movements_list,
+                                      mu_est, max_guesses, correct_threshold, 
+                                      image_shape, bias=None, object_height=1):
     """ Find all utm positions for tracks at given gt segment.
     
     
     Args:
         tracks: list of track dicts
         obs_ind: observation index
-        gt_idex: groundtruth index
+        anchor_index: groundtruth index
         segment_step: segment ind
-        pmatrix_list: list of pmatrix dicts
-        segment_movements_list: arrays relating frame to groundtruth
+        pix4d: dictionary of with keys:
+            pmatrices: list of pmatrix dicts
+            offset: camera coordinates offset
+            elevation_r: elevation raster plot of map area
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
+        segment_movements_list: arrays relating frame to anchor
         mu_est: where to start looking for ground
-        offset: from pix4d
-        elevation_r: elevation raster plot of map area
         max_guesses: how many iterations to search along projection ray 
             before returning estimate
         correct_threshold: if the distance between the point on the 
             projection ray and the ground is within this threshold 
-            stop seraching and return point
-        pixel_width: pixel width of pixels in elevation raster in utm units
-        pixel_height: like pixel width
-        x_origin: origin of elevation raster in utm units
-        y_origin: like x_origin
+            stop searching and return point
         bias: how much to modify utm points (known error between segments for instance)
         object_height: expected height of object above ground
         
     """
-    if gt_index >= len(segment_movements_list):
+    if anchor_index >= len(segment_movements_list):
         # Last frame
-        if gt_index < len(pmatrix_list):
+        if anchor_index < len(pix4d['pmatrices']):
             movement_matrix = np.eye(3)
         else:
             print("Error, gt_index too high, returning False, False")
             return False, False
     else:
         # Translation from last ground truth
-        movement_matrix = segment_movements_list[gt_index][segment_step]
-    raw_pmatrix_dict = pmatrix_list[gt_index]
-    pmatrix_dict = correct_pmatrix(raw_pmatrix_dict, movement_matrix, mu_est)
+        movement_matrix = segment_movements_list[anchor_index][segment_step]
+    
+    pmatrix_dict = correct_pmatrix(pix4d['pmatrices'][anchor_index], 
+                                   movement_matrix, mu_est)
     # WHY NOT MULTIPLIED BY LAST MU
     rotation_matrix = copy.copy(movement_matrix[:2, :2])
         
     utms, new_mu = get_obs_ind_utms(tracks, obs_ind, rotation_matrix,
-                                    pmatrix_dict, offset, elevation_r, 
-                                    mu_est, max_guesses, correct_threshold, 
-                                    pixel_width, pixel_height, x_origin, 
-                                    y_origin, image_shape, bias)
+                                    pmatrix_dict, pix4d, mu_est, max_guesses, 
+                                    correct_threshold, image_shape, bias)
     return utms, new_mu
 
 def calculate_utms_for_segment_step(tracks, obs_ind, gt_index, segment_step,
@@ -947,57 +976,84 @@ def calculate_utms_for_segment_step(tracks, obs_ind, gt_index, segment_step,
     """
     print(" use 'kmap.calculate_utms_at_obs_index' instead of 'calculate_utms_for_segment_step'")
     
+    pix4d = {'offset': offset,
+             'elevation_r': elevation_r,
+             'pmatrices': pmatrix_list,
+             'x_origin': x_origin,
+             'y_origin': y_origin,
+             'pixel_width': pixel_width,
+             'pixel_height': pixel_height}
     
-    utms, new_mu = calculate_obs_ind_utms_in_segment(tracks, obs_ind, gt_index, segment_step,
-                                    pmatrix_list, segment_movements_list,
-                                    mu_est, offset, elevation_r, max_guesses,
-                                    correct_threshold, pixel_width, pixel_height,
-                                    x_origin, y_origin, image_shape, bias,
-                                    object_height
-                                   )
+    
+    utms, new_mu = calculate_obs_ind_utms_in_segment(tracks, obs_ind, gt_index, 
+                                                     segment_step, pix4d, 
+                                                     segment_movements_list,
+                                                     mu_est,  max_guesses,
+                                                     correct_threshold, image_shape, 
+                                                     bias, object_height)
     return utms, new_mu
 
 
-def calculate_total_segment_error(tracks, obs_ind, gt_index,
-                                pmatrix_list, segment_movements_list,
-                                mu_est, offset, elevation_r, max_guesses,
-                                correct_threshold, pixel_width, pixel_height,
-                                x_origin, y_origin, image_shape, object_height=1):
-    if gt_index + 1 == len(pmatrix_list):
+def calculate_total_segment_error(tracks, obs_ind, anchor_index, pix4d, 
+                                  segment_movements_list, mu_est, max_guesses,
+                                  correct_threshold, image_shape, object_height=1):
+    """ Calculate the distance between tracks in same obs_ind but projected through
+    camera matrix estimated by last anchor frame with estimated local movement vs
+    the next anchor frame.
+    
+    Args:
+        tracks: list of track dicts
+        obs_ind: observation index
+        anchor_index: groundtruth index
+        segment_step: segment ind
+        pix4d: dictionary of with keys:
+            pmatrices: list of pmatrix dicts
+            offset: camera coordinates offset
+            elevation_r: elevation raster plot of map area
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
+        segment_movements_list: arrays relating frame to anchor
+        mu_est: where to start looking for ground
+        max_guesses: how many iterations to search along projection ray 
+            before returning estimate
+        correct_threshold: if the distance between the point on the 
+            projection ray and the ground is within this threshold 
+            stop searching and return point
+        bias: how much to modify utm points (known error between segments for instance)
+        object_height: expected height of object above ground
+    """
+    
+    if anchor_index + 1 == len(pix4d['pmatrices']):
         # no next segment
         return False
     
             
        # utms in last frame on current segment
-    utms, new_mu = calculate_obs_ind_utms_in_segment(tracks, obs_ind, gt_index, -1,
-                                                    pmatrix_list, segment_movements_list,
-                                                    mu_est, offset, elevation_r, max_guesses,
-                                                    correct_threshold, pixel_width, pixel_height,
-                                                    x_origin, y_origin, image_shape, object_height=1
-                                                   )
-    utms, new_mu = calculate_obs_ind_utms_in_segment(tracks, obs_ind, gt_index, -1,
-                                                    pmatrix_list, segment_movements_list,
-                                                    new_mu, offset, elevation_r, max_guesses,
-                                                    correct_threshold, pixel_width, pixel_height,
-                                                    x_origin, y_origin, image_shape, object_height=1
-                                                   )
-    next_utms, new_mu = calculate_obs_ind_utms_in_segment(tracks, obs_ind, gt_index+1, 0,
-                                                    pmatrix_list, segment_movements_list,
-                                                    new_mu, offset, elevation_r, max_guesses,
-                                                    correct_threshold, pixel_width, pixel_height,
-                                                    x_origin, y_origin, image_shape, object_height=1
-                                                   )
+    utms, new_mu = calculate_obs_ind_utms_in_segment(tracks, obs_ind, anchor_index, 
+                                                     -1, pix4d, segment_movements_list,
+                                                     mu_est, max_guesses, correct_threshold,  
+                                                     image_shape, object_height=1)
+    
+    utms, new_mu = calculate_obs_ind_utms_in_segment(tracks, obs_ind, anchor_index, 
+                                                     -1, pix4d, segment_movements_list,
+                                                     new_mu, max_guesses, correct_threshold, 
+                                                     image_shape, object_height=1)
+    
+    next_utms, new_mu = calculate_obs_ind_utms_in_segment(tracks, obs_ind, anchor_index+1, 
+                                                          0, pix4d, segment_movements_list,
+                                                          new_mu, max_guesses, correct_threshold, 
+                                                          image_shape, object_height=1)
     
     error = next_utms - utms
+    
     return(error)
 
 
-def calculate_bias_for_segment(tracks, obs_ind, gt_index,
-                                pmatrix_list, segment_movements_list,
-                                mu_est, offset, elevation_r, max_guesses,
-                                correct_threshold, pixel_width, pixel_height,
-                                x_origin, y_origin, image_shape, object_height=1):
-    
+def calculate_bias_for_segment(tracks, obs_ind, anchor_index, pix4d, 
+                               segment_movements_list, mu_est, max_guesses, 
+                               correct_threshold, image_shape, object_height=1):
     """ Calculate difference between positions in last segment and new segment.
     
     Return difference divided by number of steps in segment.
@@ -1006,37 +1062,37 @@ def calculate_bias_for_segment(tracks, obs_ind, gt_index,
     Args:
         tracks: list of track dicts
         obs_ind: observation index
-        gt_index: groundtruth index
-        pmatrix_list: list of pmatrix dicts
+        anchor_index: groundtruth index
+        pix4d: dictionary of with keys:
+            pmatrices: list of pmatrix dicts
+            offset: camera coordinates offset
+            elevation_r: elevation raster plot of map area
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
         segment_movements_list: arrays relating frame to groundtruth
         mu_est: where to start looking for ground
-        offset: from pix4d
-        elevation_r: elevation raster plot of map area
         max_guesses: how many iterations to search along projection ray before r
             eturning estimate
         correct_threshold: if the distance between the point on the projection ray 
             and the ground is within this threshold stop searching and return point
-        pixel_width: pixel width of pixels in elevation raster in utm units
-        pixel_height: like pixel width
-        x_origin: origin of elevation raster in utm units
-        y_origin: like x_origin
         image_shape: (height, width) of drone frame
         object_height: expected height of object above ground
         
     """
     
     
-    if gt_index + 1 >= len(segment_movements_list):
+    if anchor_index + 1 >= len(segment_movements_list):
         # no next segment
         return np.zeros((len(tracks), 2), dtype=float)
     
-    error = calculate_total_segment_error(tracks, obs_ind, gt_index,
-                                pmatrix_list, segment_movements_list,
-                                mu_est, offset, elevation_r, max_guesses,
-                                correct_threshold, pixel_width, pixel_height,
-                                x_origin, y_origin, image_shape, object_height=1)
+    error = calculate_total_segment_error(tracks, obs_ind, anchor_index, pix4d, 
+                                          segment_movements_list, mu_est, 
+                                          max_guesses, correct_threshold, 
+                                          image_shape, object_height=1)
     error[np.isnan(error)] = 0.0
-    bias = error / len(segment_movements_list[gt_index])
+    bias = error / len(segment_movements_list[anchor_index])
     
     return bias
 
@@ -1067,11 +1123,11 @@ def get_pix4d_info(map_folder, observation_name):
     
     pmatrix_file = os.path.join(map_folder, "1_initial", "params",
                                 f"{observation_name}_pmatrix.txt")
-    pix4d_info['pmatrices'] = kmap.create_pmatrix_dicts(pmatrix_file)
+    pix4d_info['pmatrices'] = create_pmatrix_dicts(pmatrix_file)
     
     offset_file = os.path.join(map_folder, "1_initial", "params",
                            f"{observation_name}_offset.xyz")
-    pix4d_info['offset'] = kmap.load_map_offset(offset_file)
+    pix4d_info['offset'] = load_map_offset(offset_file)
     
     geotif_dsm_file =  os.path.join(map_folder, "3_dsm_ortho", "1_dsm",
                                 f"{observation_name}_dsm.tif")
@@ -1088,18 +1144,104 @@ def get_pix4d_info(map_folder, observation_name):
                                    f"{observation_name}_dtm.tif")             
     dtm_gtif = gdal.Open(geotif_dtm_file)
     dtm = dtm_gtif.GetRasterBand(1).ReadAsArray()
-    dtm = kmap.fill_with_min(dtm)
+    dtm = fill_with_min(dtm)
     pix4d_info['elevation_r'] = cv2.resize(dtm, 
                                            (dsm_gtif.RasterXSize, 
                                             dsm_gtif.RasterYSize), 
                                            interpolation=cv2.INTER_LINEAR)
     
     return pix4d_info
-               
-        
+                      
+def video_tracks_to_utm(tracks, pix4d_info, anchor_obs_inds, 
+                        segment_movements_list, frame_files, mu_est=80, 
+                        max_guesses=50, correct_threshold=.1, object_height=0, 
+                        verbose=False, correct_anchor_error=False):
+    """Convert tracks from video cordinates to utm coordinates.
     
-                      
-                      
+    Uses 3D landscape and camera information to make this transformation.
+    
+    Args:
+        tracks: list of track dicts
+        pix4d_info: dictionary of with keys:
+            pmatrices: list of pmatrix dicts
+            offset: camera coordinates offset
+            elevation_r: elevation raster plot of map area
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
+        anchor_obs_inds (list): observation index for each anchor frame
+        segment_movements_list: arrays relating frame to groundtruth
+        frame_files: list of frame files in observation
+        mu_est: where to start looking for ground
+        max_guesses: how many iterations to search along projection ray before r
+            eturning estimate
+        correct_threshold: if the distance between the point on the projection ray 
+            and the ground is within this threshold stop searching and return point
+        object_height: expected height of objects in tracks  above ground
+        verbose: if True, print status every 10,000 frames
+        correct_anchor_error: if True, distribute error between track points
+            before and after new anchor frame across entire segment versus on 
+            last frame of segment"""
+    
+    # get the shape of a frame in the video
+    frame = cv2.imread(frame_files[0])
+    frame_shape = frame.shape
+    
+    utm_tracks = []
+    anchor_ind = 0
+    # The the last observation index in the segment
+    segment_last_obs_ind = anchor_obs_inds[anchor_ind+1]
+    if correct_anchor_error:
+        step_bias = calculate_bias_for_segment(tracks, segment_last_obs_ind, 
+                                               anchor_ind, pix4d_info, 
+                                               segment_movements_list, mu_est, 
+                                               max_guesses, correct_threshold, 
+                                               frame_shape, object_height)
+
+
+    for obs_ind, _ in enumerate(frame_files):
+        if verbose:
+            if obs_ind % 10000 == 0:
+                print('{} frames processed'.format(obs_ind))
+
+        if anchor_ind < len(anchor_obs_inds) - 1:
+            # more anchors to go, check if time to use next one
+            if anchor_obs_inds[anchor_ind+1] == obs_ind:
+                # start of next anchor segment
+                anchor_ind += 1
+                if anchor_ind + 1 == len(anchor_obs_inds):
+                    # this is the last anchor segment
+                    step_bias = np.zeros((len(tracks), 2))
+                else:
+                    segment_last_obs_ind = anchor_obs_inds[anchor_ind + 1]
+                    if correct_anchor_error:
+                        step_bias = calculate_bias_for_segment(tracks, 
+                                                               segment_last_obs_ind, 
+                                                               anchor_ind, pix4d_info, 
+                                                               segment_movements_list, 
+                                                               mu_est, max_guesses, 
+                                                               correct_threshold, 
+                                                               frame_shape, object_height)
+        # Index in segment of current observation index
+        segment_step = get_segment_step(obs_ind, anchor_obs_inds, anchor_ind)
+        if not correct_anchor_error:
+            step_bias = np.zeros((len(tracks), 2))
+        bias = step_bias * segment_step
+        utms, mu = calculate_obs_ind_utms_in_segment(tracks, obs_ind, anchor_ind, 
+                                                     segment_step, pix4d_info, 
+                                                     segment_movements_list, mu_est, 
+                                                     max_guesses, correct_threshold, 
+                                                     frame_shape, bias, 
+                                                     object_height)
+        if mu:
+            mu_est = mu
+        utm_tracks.append(utms)
+
+    utm_tracks = np.stack(utm_tracks)
+    utm_tracks = np.transpose(utm_tracks, (1, 0, 2))
+    
+    return utm_tracks                
         
     
 

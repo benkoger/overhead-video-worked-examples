@@ -356,22 +356,22 @@ class TrackCorrectionGUI():
 
         if key == ord(';'):
             self.change_frame_function(3)
-        #elif key == 2 or key == 81: #left key = move frame back
         elif key == ord('k'):
             self.change_frame_function(-3)
         elif key == ord(']'):
             self.change_frame_function(1)
-        #elif key == 2 or key == 81: #left key = move frame back
         elif key == ord('['):
             self.change_frame_function(-1)
         elif key == ord('9'):
             self.change_frame_function(-90)
-        #elif key == 2 or key == 81: #left key = move frame back
         elif key == ord('0'):
             self.change_frame_function(90)
+        elif key == ord('7'):
+            self.change_frame_function(-300)
+        elif key == ord('8'):
+            self.change_frame_function(300)
         elif key == ord('1'):
             self.change_frame_function(-5000)
-        #elif key == 2 or key == 81: #left key = move frame back
         elif key == ord('2'):
             self.change_frame_function(5000)
         elif key == 58:

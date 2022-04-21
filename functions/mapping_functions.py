@@ -1122,7 +1122,8 @@ def get_ungulates_frame_shape(supress_warning=False):
               "ungulate worked example videos.")
     return (2160, 4096, 3)
 
-def get_pix4d_info(map_folder, observation_name, pmatrix_sort='ungulates'):
+def get_pix4d_info(map_folder, observation_name, pmatrix_sort='ungulates',
+                   load_ortho=False):
     """ Load various of the files produced by Pix4D that are required map projection.
     
     Args:
@@ -1130,6 +1131,7 @@ def get_pix4d_info(map_folder, observation_name, pmatrix_sort='ungulates'):
             saved
         observation_name: name of pix4d project
         pmatrix_sort: how to sort frame names assosiated with each pmatrix 
+        load_ortho: If True, also load the rgb orthomosaic
     """
 
     pix4d_info = {}
@@ -1163,6 +1165,19 @@ def get_pix4d_info(map_folder, observation_name, pmatrix_sort='ungulates'):
                                            (dsm_gtif.RasterXSize, 
                                             dsm_gtif.RasterYSize), 
                                            interpolation=cv2.INTER_LINEAR)
+    
+    if load_ortho:
+        # Load the rgb orthomosaic
+        geotif_image_file = os.path.join(map_folder, "3_dsm_ortho", "2_mosaic",
+                                         f"{observation_name}_transparent_mosaic_group1.tif") 
+        image_gtif = gdal.Open(geotif_image_file)
+
+        bands = []
+        for band_num in range(1, 4):
+            srcband = image_gtif.GetRasterBand(band_num)
+            a = srcband.ReadAsArray()
+            bands.append(a)
+        pix4d_info['ortho'] = np.stack(bands, 2)
     
     return pix4d_info
                       

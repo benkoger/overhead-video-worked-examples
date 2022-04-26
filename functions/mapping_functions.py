@@ -76,22 +76,28 @@ def utm_to_raster(x_utm, y_utm, raster_info, image_scale=1.0):
     return((x_raster, y_raster))
 
 
-def utm_to_raster_track(track_utm, x_origin, y_origin, 
-                        pixel_width, pixel_height, image_scale=1):
+def utm_to_raster_track(track_utm, pix4d_info, image_scale=1):
 
     '''
     Transforms from utm map coordinates to raster map coordinates for a given track
 
     track_utm: shape(n,2) track
-    x_origin: of raster image in utm 
-    y_origin: of raster image in utm
-    pixel_height: of raster image in utm
-    pixel_width: of raster image in utm
+    pix4d_info: dictionary that contains:
+        x_origin: of raster image in utm 
+        y_origin: of raster image in utm
+        pixel_height: of raster image in utm
+        pixel_width: of raster image in utm
     image_scale: if the raster image being used has been scaled from the original image
                  image scale of .5 means that the map is being used at
                  .5 w .5 h compared to original
 
     '''
+    
+    x_origin = pix4d_info['x_origin']
+    y_origin = pix4d_info['y_origin']
+    pixel_width = pix4d_info['pixel_width']
+    pixel_height = pix4d_info['pixel_height']
+    
     track_raster = np.copy(track_utm)
     track_raster[:,0] = ((track_raster[:,0] - x_origin) / pixel_width) * image_scale 
     track_raster[:,1] = ((track_raster[:,1] - y_origin) / pixel_height) * image_scale 

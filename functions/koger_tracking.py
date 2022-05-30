@@ -93,7 +93,7 @@ def create_new_track(first_frame, first_position, pos_index, class_label=None,
                 }
     
     if class_label is not None:
-        new_track['class'] = [class_label]
+        new_track['class_label'] = [class_label]
     if contour is not None:
         new_track['contour'] = [contour]
     if size is not None:

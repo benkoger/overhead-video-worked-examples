@@ -804,8 +804,69 @@ def get_track_position_at_obs_ind(track, obs_ind, image_shape):
         return False
     
     return position_uv
+
+
+def get_frame_pos_to_utm(frame_pos, anchor_index, segment_step, 
+                         segment_movements_list, pmatrix_dict, pix4d, 
+                         mu_est, max_guesses, correct_threshold, image_shape, 
+                         bias=None, object_height=1):
+
+    """ Calculate utm positions for every track at obs_ind.
     
+    Return num tracks by two array. nan if track isn't present
     
+    Args:
+        frame_pos: frame coordinates (uv top left origin)
+        anchor_index: groundtruth index
+        segment_step: segment ind
+        segment_movements_list: arrays relating frame to anchor
+        pmatrix_dict: must contain inv_mmatrix (inverse of the first three columns of pmatrix)
+            and p4 (fourth column of pmatrix). Corrected for this frame
+            from the last anchor frame
+        pix4d: dictionary of with keys:
+            offset: camera coordinates offset
+            elevation_r: elevation raster plot of map area
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
+        mu_est: where to start looking for ground
+        max_guesses: how many iterations to search along projection ray before returning estimate
+        correct_threshold: if the distance between the point on the projection ray and the ground is 
+                           within this threshold stop seraching and return point
+        bias: how much to modify utm points (known error between segments for instance)
+        object_height: expected height of object above ground
+    """
+    
+    if anchor_index >= len(segment_movements_list):
+        # Last frame
+        if anchor_index < len(pix4d['pmatrices']):
+            movement_matrix = np.eye(3)
+        else:
+            print("Error, gt_index too high, returning False, False")
+            return False, False
+    else:
+        # Translation from last ground truth
+        movement_matrix = segment_movements_list[anchor_index][segment_step]
+    
+    pmatrix_dict = correct_pmatrix(pix4d['pmatrices'][anchor_index], 
+                                   movement_matrix, mu_est)
+
+    rotation_matrix = copy.copy(movement_matrix[:2, :2])
+    
+    if bias is None:
+        bias = np.zeros((len(tracks), 2), dtype=float)
+    
+
+    track_uv_rot = np.matmul(rotation_matrix, frame_pos)
+    x_utm, y_utm, _, mu, _ = from_image_to_map(track_uv_rot, mu_est, 
+                                               pmatrix_dict, pix4d, 
+                                               max_guesses, correct_threshold, 
+                                               object_height)
+
+    utm = [x_utm, y_utm] + bias[track_ind]
+    
+    return utm, mu
     
     
 
@@ -902,6 +963,58 @@ def utm_to_raster_for_step(utms, x_origin, y_origin, pixel_width,
     raster_points = np.vstack(raster_points)
     
     return raster_points
+
+def calculate_position_utm(frame_pos, obs_ind, anchor_index, segment_step,
+                           pix4d, segment_movements_list,
+                           mu_est, max_guesses, correct_threshold, 
+                           image_shape, bias=None, object_height=1):
+    """ Find all utm positions for tracks at given gt segment.
+    
+    
+    Args:
+        tracks: list of track dicts
+        obs_ind: observation index
+        anchor_index: groundtruth index
+        segment_step: segment ind
+        pix4d: dictionary of with keys:
+            pmatrices: list of pmatrix dicts
+            offset: camera coordinates offset
+            elevation_r: elevation raster plot of map area
+            pixel_width: pixel width of pixels in elevation raster in utm units
+            pixel_height: like pixel width
+            x_origin: origin of elevation raster in utm units
+            y_origin: like x_origin
+        segment_movements_list: arrays relating frame to anchor
+        mu_est: where to start looking for ground
+        max_guesses: how many iterations to search along projection ray 
+            before returning estimate
+        correct_threshold: if the distance between the point on the 
+            projection ray and the ground is within this threshold 
+            stop searching and return point
+        bias: how much to modify utm points (known error between segments for instance)
+        object_height: expected height of object above ground
+        
+    """
+    if anchor_index >= len(segment_movements_list):
+        # Last frame
+        if anchor_index < len(pix4d['pmatrices']):
+            movement_matrix = np.eye(3)
+        else:
+            print("Error, gt_index too high, returning False, False")
+            return False, False
+    else:
+        # Translation from last ground truth
+        movement_matrix = segment_movements_list[anchor_index][segment_step]
+    
+    pmatrix_dict = correct_pmatrix(pix4d['pmatrices'][anchor_index], 
+                                   movement_matrix, mu_est)
+    # WHY NOT MULTIPLIED BY LAST MU
+    rotation_matrix = copy.copy(movement_matrix[:2, :2])
+        
+    utms, new_mu = get_obs_ind_utms(tracks, obs_ind, rotation_matrix,
+                                    pmatrix_dict, pix4d, mu_est, max_guesses, 
+                                    correct_threshold, image_shape, bias)
+    return utms, new_mu
 
 def calculate_obs_ind_utms_in_segment(tracks, obs_ind, anchor_index, segment_step,
                                       pix4d, segment_movements_list,
@@ -1137,6 +1250,11 @@ def get_pix4d_info(map_folder, observation_name, pmatrix_sort='ungulates',
             saved
         observation_name: name of pix4d project
         pmatrix_sort: how to sort frame names assosiated with each pmatrix 
+            one of:
+            simple: normal sort 
+            big_map: based on the naming convention of ungulate big maps
+            ungulate: based on naming conventions of frames
+
         load_ortho: If True, also load the rgb orthomosaic
     """
 

@@ -1,0 +1,10 @@
+{"project_name": PATH,
+ "annotations_folder": PATH,
+ "base_frames_folder": PATH,
+ "detectron_path": PATH,
+ "figure_folder": PATH,
+ "overhead_functions_path": PATH,
+ "pix4d_folder": PATH,
+ "processed_folder": PATH,
+ "videos_folder": PATH
+}

@@ -1,0 +1,10 @@
+{"project_name": "ungulates",
+ "annotations_folder": "/home/demo-account/ungulates-server/processing/annotations/all-annotations",
+ "base_frames_folder": "/home/demo-account/ungulates-server/processing/kenya-tracking/raw-frames/raw-footage",
+ "detectron_path": "/home/demo-account/detectron2-master",
+ "figure_folder": "/home/demo-account/Dropbox/drone-paper/figures",
+ "overhead_functions_path": "/home/demo-account/overhead-video-worked-examples/functions",
+ "pix4d_folder": "/home/demo-account/ungulates-server/processing/worked-examples",
+ "processed_folder": "/home/demo-account/ungulates-server/processing/kenya-tracking/processed-videos/raw-footage",
+ "videos_folder": "/home/demo-account/ungulates-server/raw_footage"
+}

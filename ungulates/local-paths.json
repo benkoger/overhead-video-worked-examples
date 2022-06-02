@@ -3,6 +3,7 @@
  "base_frames_folder": PATH,
  "detectron_path": PATH,
  "figure_folder": PATH,
+ "flight_logs": PATH,
  "overhead_functions_path": PATH,
  "pix4d_folder": PATH,
  "processed_folder": PATH,

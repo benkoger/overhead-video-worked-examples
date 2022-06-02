@@ -1,50 +1,76 @@
-# overhead-video-worked-examples
-Worked examples of behavioral data extraction from overhead video.
+# Worked Examples
 
-Worked Examples:
+<p align="center">
+<img src="https://github.com/benkoger/overhead-video-worked-examples/blob/main/pictures/tracks_on_map_observation088.png" height="320px">
+</p>
 
-Kenyan Ungulates
+This repository contains code and data for the worked examples described in Koger *et al.* (n.d.). Full descriptions of the examples are below; you can use the links there to navigate through the notebooks for each example. We encourage users to download the notebooks and modify the code to suit their own needs. If you find the code or the paper useful in your own studies, we ask that you cite this project. *insert citation information for paper and for code (if different)*
 
-Our dataset had five object classes: zebra, African buffalo, impala, water- buck, and a final class for any species that was annotated just a small number of times we call “other”. The “other” species, like giraffe or eland, shouldn’t be considered background but aren’t worth trying to specifically learn. Our training set was primarily made for detecting zebras. There were 1913 total annotated video frames (the equivalent of annotating just over a minute of video)  with 20,682 zebra instances, 8794 buffalo instances, 6992 impala instances, 800 waterbuck instances, and 1175 “other” instances. The total dataset was randomly distributed into a non overlapping training, validation, and test set where 60 percent of frames were used in the training set and 20 percent used for each the validation and test set.
-During training, we randomly flip the training images both vertically and horizontally. We also randomly change the brightness, contrast, and saturation of the images
+## Getting Started
+### Computing requirements
+Implementing this method as here requires specific computing resources that exceed many personal computers. Computing requirements can be met either with certain high performance gaming-type machines or using dedicated computing clusters including those based in the cloud.  The large CNNs used here are designed to run on graphical processing units (GPUs) or specialized deep learning processors (for example tensor processing units (TPUs). Other types of models not implemented here, however, such as mobilenet (https://arxiv.org/abs/1704.04861), could be used on a CPU.  Among GPUs, many deep learning frameworks only work with those designed by the NVIDIA [NVIDIA Corporation, USA] although this is changing. While specific GPU memory requirements depend on the exact model and images, at least 8GB but ideally 10+ GB of memory is necessary. SfM mapping tasks, on the other hand, are generally limited by a computer’s RAM requiring up to 16GB for mapping projects with 500-1000 images (https://support.pix4d.com/hc/en-us/articles/115002439383-Computer-requirements-PIX4Dmapper). Lastly, storing the high resolution videos and the individual frames that must be extracted from them can require 100s of gigabytes or terabytes of hard drive space. For the worked examples specifically, the exrtacted frames from the ungulates worked examples takes around 420 gigabytes of space, while the gelada frames take 45 gigabytes of space.
 
+We provide intermediate outputs for the worked examples at *data storage* so people intersted in exploring just one part of the method can do so.
 
-Training the model:
-	Annotating images:
-After collecting videos, extract images for annotation
-model_training/extract_annotation_images.ipynb
-Using the software of your choice, annotate the extracted images
-The exact output format depends on the model training pipeline you use. For these examples, the data should be extracted as .json files in the COCO format
-Generally, the training and validation set should be separate, but in some cases it is helpful to randomly divide a set of already annotated images into a training and test set
+### Dependencies
+- [cv2](https://opencv.org/)
+- [Detectron2](https://detectron2.readthedocs.io/en/latest/)
+- [fvcore](https://github.com/facebookresearch/fvcore)
+- [gdal](https://gdal.org/)
+- [imutils](https://github.com/PyImageSearch/imutils)
+- [matplotlib](https://matplotlib.org/)
+- [numpy](https://numpy.org/)
+- [pandas](https://pandas.pydata.org/)
+- [pycocotools](https://pypi.org/project/pycocotools/)
+- [requests](https://pypi.org/project/requests/)
+- [scipy](https://scipy.org/)
+- [tabulate](https://pypi.org/project/tabulate/)
+- [torch](https://pytorch.org/docs/stable/torch.html)
+- [utm](https://pypi.org/project/utm/)
+- [yaml](https://pyyaml.org/wiki/PyYAMLDocumentation)
 
-	
-Mapping:
-All necessary notebooks are found at https://github.com/benkoger/overhead-video-worked-examples/tree/main/ungulates/mapping.
-Use the notebook called “link_frames_to_drone_logs.ipynb” to choose the anchor frames with which to build the 3D landscape models. In this example we use the flight logs that DJI drones export as part of a flight (ours are in the format used in 2018). These drone logs don’t explicitly link the frames in the video to the recorded sensor information in this file. While it does record when the camera is recording we didn’t find this to always be reliable. Instead, we manually record the first frame in the video in which the drone visibly begins to return home at the end of an observation.  The flight log records when the “go home” signal is received by the drone from the controller. We link the first major rotation (based on the on board compass) after the “go home” signal has been received to the manually recorded frame. We then estimate the corresponding frame number for every other row of the flight log knowing the time elapsed before or after the “go home” frame number and the fact that we record at 60 frames per second. We also record which video clip (since DJI stores long recordings as smaller clips) the “go home” frame occurs in.
-The notebook contains commented threshold variables that define how often a new anchor frame should be selected based on the estimated drone movement and rotation since the last anchor frame.
-The selected anchor frames are saved in a specified folder for structure from motion processing with the users chosen software.
-Additionally the modified flight logs that record which frames are used for the anchor frames are saved as .pkl files
-The estimated latitude, longitude, and elevation coordinates of the drone when each anchor frame was taken is also saved as a .csv the the expected format to be used with pix4D
-We use Pix4D (with an educational license) to take the images and corresponding drone location information to build 3D landscape models. …
-We use the notebook called “extract_drone_movement.ipynb” to calculate how the drone (camera) moves between anchor frames. Based on output files from Pix4D we note any anchor frames that were removed during the SfM process. Using local features (see the function get_segment_drone_movement in drone_movement.py for specific implementation details) we estimate drone movement from each previous anchor frame.
+### Local file paths
+The code requires users to specify various locations on their local machines where files are stored or should be saved. These filepaths are saved in a .json file titled 'local-paths.json', (LOCATED WHERE? - CURRENTLY MINE IS SAVED IN THE UNGULATES FOLDER, BUT SHOULD PROBABLY BE SAVED IN BASE FOLDER - overhead-video-worked-examples - IF IT IS TO BE USED FOR BOTH WORKED EXAMPLES). This file can be edited in a standard text editor and should specify the following information:
+- "general_dection_path": *insert description*
+- "annotations_folder": *insert description*
+- "labelbox_folder": *insert description*
+- "videos_folder": *insert description*
+- "base_ungulates": *insert description*
+- "half_res_base_ungulates": *insert description*
+- "labelbox_key": *insert description*
+- "model_folder": *insert description*
+- "detectron_path": *insert description*
+- "overhead_functions_path": *insert description*
+- "base_data_path": *insert description*
+- "base_frames_folder": *insert description*
+- "pix4d_folder": *insert description*
+- "processed_folder": *insert description*
 
-Geladas
-Model training
-All notebooks referred to in this section can be found at https://github.com/benkoger/overhead-video-worked-examples/tree/main/geladas/detection/model-training 
-We manually split observation videos into training, validation, and test observations with 20 videos used for training and 7 each used  validation and testing. We save this information in a file called video_train_val_test_split.json. This file is used by the notebook called extract_annotation_images.ipynb to extract frames (or crops of frames) from these videos and save them for annotation. In addition to the randomly chosen frames the notebook can also save a frame just before and just after the chosen frame (the spacing is defined by a variable called “triplet_spacing”). These additional views can help during annotation because moving individuals are easier to see across pairs of frames instead of single static images.
-For annotation, we use Labelbox (REF:LABELBOX) with a free educational license. We use bounding boxes to annotate all geladas and humans in the frames. Each gelada box is further annotated with a “posture” label (one of: standing, sitting, unknown) and a “status” label (one of: juvenile, adult male, other, unknown). Initially we just annotate a subset of the image sets to train an initial model for model assisted learning (see vi).
-After annotating with label box, we use coco_from_labelbox.ipynb to convert the .json file that labelbox exports into the coco .json format that is required by the models we plan to train. We use Detectron2 which is built on top of pytorch to train our model. For this task we use Faster RCNN with a Resnet-50 Feature pyramid network backbone. We use train_gelada_detection.ipynb to train our model.
-We train with a simple learning rate scheduler that decreases the learning rate by half after twenty epochs of no improvement on the validation set
-We save the model that produces the lowest loss on the validation set over the course of training.
-After initial training, we use the model to help annotate further images (Model assisted labeling). Label box has built in functionality for this although, at the time of this work at least, the Labelbox SDK must be used to upload the annotations. We use labelbox_mal.ipynb for this process.
-After iterating over step v and vi until appropriate model performance has been achieved, the researcher is left with a robust detection model they can move forward with. The notebook called precision-accuracy-curves.ipynb can be used to evaluate current model performance beyond simply looking at the loss function.
+## Worked Example 1: Kenyan Ungulates
 
-Inference
-		All notebooks referred to in this section can be found at https://github.com/benkoger/overhead-video-worked-examples/tree/main/geladas/detection/inference 
-The input to the model we just trained is images, not video. While it is very possible to extract frames from video as part of the inference pipeline such that no still frames ever need to be saved (saving substantial storage space), we refer back to the individual video frames at multiple points over the course of our complete method so choose to extract all frames and save them for use both during inference and also later in the process. We use the notebook called extract_video_frames.ipynb to extract all frames.
- The notebook process-video.ipynb uses the previously trained model on all frames across full videos. The user specifies the name of the video that should be processed, and the name of the trained model to use (with the variables ‘video_name’ and ‘model_name’ respectively).
-For each frame in the video, the detected bonding boxes (‘pred_boxes’), confidence scores (‘scores’), predicted object classes (‘pred_classes’), and the frame’s name (‘filename’) are saved in a numpy file called [video_name]_detections.npy
-Tracking
-Mapping
-In this example, we demonstrate how to build the maps without corresponding drone logs. This may happen if using old videos or potentially with other brands of drones that save or record from different (or no) sensors compared to the DJI Drones used here. Instead, using “get_anchor_frames.ipynb” we choose anchor frames based on local movement. We need a new anchor frame before too much error accumulates in visual local drone movement estimation. So, we run that exact process but with higher quality thresholds selecting a new anchor frame whenever we dip below the set threshold of number of features used to estimate drone movement. We use an inlier threshold of 100, and 7 pseudo anchor frames between actual anchors.
-Once these frames are selected, they are fed into Pix4D to generate 3D models of the landscape and resulting auxiliary files
+This example processes aerial video footage of African ungulate herds. We recorded ungulate groups at Ol Pejeta and Mpala Conservancies in Laikipia, Kenya over two field seasons, from November 2 to 16, 2017 and from March 30 to April 19, 2018. In total, we recorded thirteen species, but here we focus most of our analyses on Grevy’s zebra (*Equus grevyi*). We used DJI Phantom 4 Pro drones, and deployed two drones sequentially in overlapping relays to achieve continuous observations longer than a single battery duration.
+
+Our annotated image set contains five classes: zebra, impala, buffalo, waterbuck, and other spanning 1913 annotated video frames. See the main text of the paper or [annotated_data_stats.ipynb](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/detection/model-training/annotated_data_stats.ipynb) for more details on the annotated dataset.
+
+In this example, we start with a pre-annotated dataset (we previously annotated it with now outdated software). For an example of building an annotated dataset from scratch, please see the gelada example below. The provided notebooks work through the steps listed below. The step numbers correspond to the step numbers in the main text and supplement of Koger *et al.* (n.d.). 
+- **Step 1: Video Recording** 
+    - See the paper for information on proper video recording. We provide all videos from a complete ~45 minute observation of Grevy's zebra [here](data repo).
+- **Step 2: Detection** 
+    - We start by [training](./ungulates/detection/model-training/train_ungulate_detection.ipynb) and then [evaluating](./ungulates/detection/model-training/precision-accuracy-curves.ipynb) a model that detects various ungulate species. We then use this model to [process an observation of Grevy's zebras](./ungulates/detection/inference/process-video.ipynb) that spans three overlapping drone flights. 
+    - Before processing, we [extract the individual video frames](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/detection/inference/extract_video_frames.ipynb) from the complete observation. These will be used throughout the process, including during detection. 
+- **Step 3: Tracking** 
+    - After detecting individuals in the observation we [connect these detections together into track segments](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/tracking/detections_to_tracks.ipynb). 
+    - We then use a [GUI](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/tracking/track_correction_GUI.ipynb) that lets us visually connect and correct the generated track segments.
+- **Step 4: Landscape Reconstruction and Geographic Coordinate Transformation** 
+    -  We first [extract anchor frames](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/get_anchor_frames.ipynb) from the complete observation that we use with structure from motion (SfM) software to build the 3D landscape model. The selected anchor frames are saved in a user-specified folder for structure from motion processing with the user’s chosen software. The latitude, longitude, and elevation coordinates of the drone for each anchor frame as recorded in the drone logs is saved as a .csv in the input format used by Pix4D. 
+    - We used Pix4D with an educational license for SfM processing. To follow this notebook without Pix4D, find the generated outputs [here](data repo). For high quality geo-referencing ground control points should be incorporated at this point in the process with your chosen SfM software. 
+    - We then [calculate](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/extract_drone_movement.ipynb) how the drone (camera) moves between anchor frames. We can then optionally [confirm](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/intersegment-differences.ipynb) that the local movement estimation was accurate. Combining this local drone movement with the SfM outputs we [project the detected animal tracks into the 3D landscape](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/drone_to_landscape.ipynb). 
+    - We can [visualize](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/visualize_tracks_figure.ipynb) the georeferenced tracks on the 3D landscapes. 
+
+- **Step 5: Body-part Keypoint Detection** 
+    - We [extract square crops](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/postures/crop_out_tracks.ipynb) around each tracked individual. These crops can be used with one of many existing open source animal keypoint tracking softwares such as [DeepLabCut](http://www.mackenziemathislab.org/deeplabcut), [SLEAP](https://sleap.ai/), or [DeepPoseKit](https://github.com/jgraving/DeepPoseKit). 
+    - We [provide](data repo) complete keypoints for the observation previously generated by DeepPoseKit ([performance stats](https://elifesciences.org/articles/47994)) as well as a [page]() describing how to use DeepLabCut to train a new model to use for keypoint detection in the context of this method.
+
+- **Step 6: Landscape Quantification** - 
+
+Note that Step 4 requires the use of 3rd party software to complete Structure-from-Motion tasks. We use [Pix4D](https://www.pix4d.com/product/pix4dmapper-photogrammetry-software), but there are other options available. 

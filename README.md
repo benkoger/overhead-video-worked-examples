@@ -1,7 +1,7 @@
 # Worked Examples
 
 <p align="center">
-<img src="https://github.com/benkoger/overhead-video-worked-examples/blob/main/pictures/tracks_on_map_observation088.png" height="320px">
+<img src="https://github.com/benkoger/overhead-video-worked-examples/blob/main/pictures/tracks_on_map_observation088.png" height="200px">
 </p>
 
 This repository contains code and data for the worked examples described in Koger *et al.* (n.d.). Full descriptions of the examples are below; you can use the links there to navigate through the notebooks for each example. We encourage users to download the notebooks and modify the code to suit their own needs. If you find the code or the paper useful in your own studies, we ask that you cite this project. *insert citation information for paper and for code (if different)*
@@ -30,21 +30,9 @@ We provide intermediate outputs for the worked examples at *data storage* so peo
 - [yaml](https://pyyaml.org/wiki/PyYAMLDocumentation)
 
 ### Local file paths
-The code requires users to specify various locations on their local machines where files are stored or should be saved. These filepaths are saved in a .json file titled 'local-paths.json', (LOCATED WHERE? - CURRENTLY MINE IS SAVED IN THE UNGULATES FOLDER, BUT SHOULD PROBABLY BE SAVED IN BASE FOLDER - overhead-video-worked-examples - IF IT IS TO BE USED FOR BOTH WORKED EXAMPLES). This file can be edited in a standard text editor and should specify the following information:
-- "general_dection_path": *insert description*
-- "annotations_folder": *insert description*
-- "labelbox_folder": *insert description*
-- "videos_folder": *insert description*
-- "base_ungulates": *insert description*
-- "half_res_base_ungulates": *insert description*
-- "labelbox_key": *insert description*
-- "model_folder": *insert description*
-- "detectron_path": *insert description*
-- "overhead_functions_path": *insert description*
-- "base_data_path": *insert description*
-- "base_frames_folder": *insert description*
-- "pix4d_folder": *insert description*
-- "processed_folder": *insert description*
+Each user of these notebooks will load and save their data in unique file paths on their local system. Additionally, many notebooks use data produced in preceding notebooks. To limit the amount of unnessisary notebook editing, we use a single local-paths.json file for each project that all notebooks can refer to get appropriate local paths. These paths only need to be set once for each project. 
+
+Each project has a demo .json wiht dummy paths as an example, the actual local-paths.json file with empy paths, and a local-path.md markdown file that describes how each particular path is used.
 
 ## Worked Example 1: Kenyan Ungulates
 

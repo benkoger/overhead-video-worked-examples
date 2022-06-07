@@ -46,6 +46,22 @@ Note that Step 2 and Step 4 require the use of 3rd party software to complete im
 - **Step 1: Video Recording**
     - See the paper for information on appropriate video recording techniques. We provide the example gelada video here (*link to data repo*).
 - **Step 2: Detection**
+    - **Annotation**
+        - We [extract frames](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/extract_annotation_images.ipynb) from our videos that we use to build our annotated training, validation, and test set. 
+        - We use [Labelbox](https://labelbox.com/) with a free educational license of label these extracted frames. We annotate bounding boxes and have three classes: gelada-adult-male, gelada-other, and human-observer.
+        - We [generate standard coco format json files](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/coco_from_labelbox.ipynb) from the Labelbox format .json export file that we will use to train our detection model. 
+            - The multiple coco format .jsons can be combined or split into seperate training/validation/test files with the notebook [combine_or_split_jsons.ipynb](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/coco_from_labelbox.ipynb). 
+            - We can also [get stats](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/annotated_data_stats.ipynb) about our annotations including number and of different classes and object sizes.
+        - (Optional) After training a model (see next step), we can [use it for model assisted labeling](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/labelbox_mal.ipynb) to speed up further annotation. (Note this is just for Labelbox and the code isn't intuitive (let us know how to do it better :) )
+    - **Model Training**
+        - After building an annotated data set, we [train](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/train_gelada_detection.ipynb) a detecton model.
+        - We can [visualize the trained model's detections](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/visualize_detections.ipynb) to get an intuition of the model's performance
+        - We can also [quantify the trained model's performance](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/precision-accuracy-curves.ipynb) by calculating values like precision and recall amoung others.
+        - If model performance isn't high enough more further annotation may help (see the previosuly mentioned [model assisted labeling notebook](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/labelbox_mal.ipynb))
+    - **Video Prcessing**
+        - We [extract all video frames](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/inference/extract_video_frames.ipynb) from the observation video. 
+            - Note: this is unessisary and takes a lot of memory if yuo just want to use the detection model on this video. We do this because the frames are reused at various parts of this process.
+        - We then use the trained model to [detect the geladas in each frame](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/inference/process-video.ipynb).
 - **Step 3: Tracking**
 - **Step 4: Landscape Reconstruction and Geographic Coordinate Transformation**
 - **Step 5: Body-part Keypoint Detection**

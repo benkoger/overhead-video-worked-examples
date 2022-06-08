@@ -39,6 +39,8 @@ APR08_2018_B_DJI_0005,7624,12094
 
 **flight_logs**: Where drone flight logs are stored
 
+**gametrail_folder**: (Only used for demo gametrail detection model training) Folder that contains gametrail images and masks in format downloaded from data respository (link).
+
 **overhead_functions_path**: This is the path to the folder called “functions” in this repository
 
 **pix4d_folder**: Path to folder that will store the various structure from motion processing inputs and outputs (in our case pix4d). Within this folder each observation has its own folder created in the ungulates/mapping/get_anchor_frames.ipynb notebook.

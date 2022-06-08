@@ -63,6 +63,8 @@ Note that Step 2 and Step 4 require the use of 3rd party software to complete im
             - Note: this is unessisary and takes a lot of memory if yuo just want to use the detection model on this video. We do this because the frames are reused at various parts of this process.
         - We then use the trained model to [detect the geladas in each frame](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/inference/process-video.ipynb).
 - **Step 3: Tracking**
+    - After detecting individuals in the observation we [connect these detections together into track segments](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/tracking/detections_to_tracks.ipynb).
+    - We then use a [GUI](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/tracking/track_correction_GUI.ipynb) that lets us visually connect and correct the generated track segments.
 - **Step 4: Landscape Reconstruction and Geographic Coordinate Transformation**
 - **Step 5: Body-part Keypoint Detection**
 - **Step 6: Landscape Quantification**

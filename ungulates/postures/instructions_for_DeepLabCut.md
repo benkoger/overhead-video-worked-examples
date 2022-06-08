@@ -1,7 +1,7 @@
-### DeepLabCut (as well as SLEAP) is a currently well maintained software package for animal keypoint detection. 
+### [DeepLabCut](http://www.mackenziemathislab.org/deeplabcut) (as well as [SLEAP](https://sleap.ai/)) is a currently well maintained software package for animal keypoint detection. 
 
 In this example, we use data previously annotated using DeepPosekit ((Graving et al., 2019)). The data can be found at https://github.com/jgraving/DeepPoseKit-Data/tree/master/datasets/zebra. It contains annotations for nine body parts (snout, head, neck, right and left shoulders, right and left hindquarters, tail base, tail tip) for a randomly selected subset of cropped images of individual zebras (n= 2140 ) in HDF5 format.
 
-Follow the instructions in the notebook in this folder called 'data_conversion_DPK_to_DLC.ipynb' to start a DeepLabCut project, convert our annotated data to the proper format, and use the resulting data with their interface.
+Follow the instructions in the notebook in this folder called [data_conversion_DPK_to_DLC.ipynb](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/postures/data_conversion_DPK_to_DLC.ipynb) to start a DeepLabCut project, convert our annotated data to the proper format, and use the resulting data with their interface.
 
-Crops extracted from the full observation extracted with 'crop_out_tracks.ipynb' can be fed to DeepLabCut to extract keypoints for all individuals.
+Crops extracted from the full observation extracted with [crop_out_tracks.ipynb](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/postures/crop_out_tracks.ipynb) can be fed to DeepLabCut to extract keypoints for all individuals.

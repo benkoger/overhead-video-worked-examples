@@ -114,7 +114,7 @@ Note that Step 4 requires the use of 3rd party software to complete Structure-fr
 
 - **Step 6: Landscape Quantification**
     - Many important landscape features, like ground topology, elevation, and color, are already quantified during the structure from motion step.
-    - For demonstration purposes, we also include a notebook for [training](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/game-trails(demo)/train_gametrail_detection.ipynb) a CNN to detect game trails in the landscape and another notebook for [using this model](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/game-trails(demo%29/gametrail_inference.ipynb) on our 3D landscape maps.
+    - For demonstration purposes, we also include a notebook for [training](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/game-trails(demo)/train_gametrail_detection.ipynb) a CNN to detect game trails in the landscape and another notebook for [using this model](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/game-trails%28demo%29/gametrail_inference.ipynb) on our 3D landscape maps.
     - This is just meant as a demonstration of what is possible and hasn't been carefully validated beyond visual inspection
         - See the notebooks for details on the training data and training regime used.
 

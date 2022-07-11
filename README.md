@@ -6,7 +6,7 @@
 
 This repository contains code and data for the worked examples described in Koger *et al.* (n.d.). Full descriptions of the examples are below; you can use the links there to navigate through the notebooks for each example. We encourage users to download the notebooks and modify the code to suit their own needs. If you find the code or the paper useful in your own studies, we ask that you cite this project:
 
-Koger, B., Deshpande, A., Kerby, J.T., Graving, J.M., Costelloe, B.R., Couzin, I.D. Multi-animal behavioral tracking and environmental reconstruction using drones and computer vision in the wild.
+Koger, B., Deshpande, A., Kerby, J.T., Graving, J.M., Costelloe, B.R., Couzin, I.D. [Multi-animal behavioral tracking and environmental reconstruction using drones and computer vision in the wild](https://doi.org/10.1101/2022.06.30.498251). *bioRxiv* 2022.06.30.498251
 
 ## Getting Started
 ### Data availability

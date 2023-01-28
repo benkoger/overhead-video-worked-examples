@@ -4,7 +4,7 @@
 <img src="https://github.com/benkoger/overhead-video-worked-examples/blob/main/pictures/tracks_on_map_observation088.png" height="200px">
 </p>
 
-This repository contains code and data for the worked examples described in Koger *et al.* (n.d.). Full descriptions of the examples are below; you can use the links there to navigate through the notebooks for each example. We encourage users to download the notebooks and modify the code to suit their own needs. If you find the code or the paper useful in your own studies, we ask that you cite this project:
+This repository contains code and data for the worked examples described in Koger *et al.* (n.d.). Full descriptions of the examples are below; you can use the links there to navigate through the notebooks for each example and use the example datasets linked below to run the notebooks on existing data. Beyond using the provided data, we encourage researchers to use and modify the code to suit their own needs. If you find the code or the paper useful in your own studies, we ask that you cite this project:
 
 Koger, B., Deshpande, A., Kerby, J.T., Graving, J.M., Costelloe, B.R., Couzin, I.D. Multi-animal behavioral tracking and environmental reconstruction using drones and computer vision in the wild.
 
@@ -12,8 +12,8 @@ Koger, B., Deshpande, A., Kerby, J.T., Graving, J.M., Costelloe, B.R., Couzin, I
 ### Data availability
 The data required to run these examples can be downloaded from [Edmond](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73).
 
-### Computing requirements
-To run these examples in full, the user will require an NVIDIA GPU. We suggest a GPU with a minimum of 8GB memory (ideally 10+ GB). *maybe a note about which steps specifically require the GPU, so it's clear that they can still play around with the code even if they don't have the GPU?* Additionally, storing the extracted video frames will require approximately 420 GB for the ungulates example, and 45 GB for the gelada example.
+### Computing requirements 
+To run the model training or inference (object detection) steps in full, the user will require an GPU which supports pytorch. This includes local NVIDIA GPUs with enough memory or most computing clusters or cloud computing services with GPU suport. We suggest a GPU with a minimum of 8GB memory (ideally 10+ GB). We provide our already trained models that researchers can use if they aren't able to train their own but want to explore the object detection step with our datasets. Additionally, storing the extracted video frames will require approximately 420 GB for the entire ungulates example video, and 45 GB for the entire gelada example video. To explore our examples one may decide to only use a clip from the video to reduce memory requirements.
 
 The [dataset](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73) includes intermediate outputs for the worked examples so people interested in exploring just one part of the method can do so.
 

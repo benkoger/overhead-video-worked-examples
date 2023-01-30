@@ -4,8 +4,13 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 def _get_boxes_center(boxes, frame_width=None, frame_height=None):
-    # Need frame_width and frame_height if boxes are scaled 0 to 1 and
-    # want output to be in frame coordinates
+    """ Calculate the center of each bounding box in boxes.
+    
+    frame_width and frame_height is needed if boxes are scaled 0 to 1 and
+    want output to be in frame coordinates.
+    
+    """
+    
     center = np.ones((boxes.shape[0], 2))
     if frame_width and frame_height:
         #need to convert from top right to bottom right origin

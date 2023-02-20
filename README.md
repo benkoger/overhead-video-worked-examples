@@ -10,12 +10,12 @@ Koger, B., Deshpande, A., Kerby, J.T., Graving, J.M., Costelloe, B.R., Couzin, I
 
 ## Getting Started
 ### Data availability
-The data required to run these examples can be downloaded from [Edmond](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73).
+The data required to run these examples can be downloaded from [Edmond](https://doi.org/10.17617/3.EMRZGH).
 
 ### Computing requirements 
 To run the model training or inference (object detection) steps in full, the user will require an GPU which supports pytorch. This includes local NVIDIA GPUs with enough memory or most computing clusters or cloud computing services with GPU suport. We suggest a GPU with a minimum of 8GB memory (ideally 10+ GB). We provide our already trained models that researchers can use if they aren't able to train their own but want to explore the object detection step with our datasets. Additionally, storing the extracted video frames will require approximately 420 GB for the entire ungulates example video, and 45 GB for the entire gelada example video. To explore our examples one may decide to only use a clip from the video to reduce memory requirements.
 
-The [dataset](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73) includes intermediate outputs for the worked examples so people interested in exploring just one part of the method can do so.
+The [dataset](https://doi.org/10.17617/3.EMRZGH) includes intermediate outputs for the worked examples so people interested in exploring just one part of the method can do so.
 
 ### Dependencies
 To run the code in the provided notebooks, you will need to have the following packages installed:
@@ -47,7 +47,7 @@ In this example, we start with the raw videos and build an annotated dataset fro
 
 Note that Step 2 and Step 4 require the use of 3rd party software to complete image annotation and Structure-from-Motion (SfM) tasks. We use [Labelbox](https://labelbox.com/) for annotation and [Pix4d](https://www.pix4d.com/product/pix4dmapper-photogrammetry-software) for SfM, but there are other options available.
 - **Step 1: Video Recording**
-    - See the paper for information on appropriate video recording techniques. We provide the example gelada video [here](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73).
+    - See the paper for information on appropriate video recording techniques. We provide the example gelada video [here](https://doi.org/10.17617/3.EMRZGH).
 - **Step 2: Detection**
     - **Annotation**
         - We [extract frames](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/extract_annotation_images.ipynb) from our videos that we use to build our annotated training, validation, and test set.
@@ -70,7 +70,7 @@ Note that Step 2 and Step 4 require the use of 3rd party software to complete im
     - We then use a [GUI](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/tracking/track_correction_GUI.ipynb) that lets us visually connect and correct the generated track segments.
 - **Step 4: Landscape Reconstruction and Geographic Coordinate Transformation**
     -  We first [extract anchor frames](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/mapping/get_anchor_frames.ipynb) from the complete observation that we use with structure from motion (SfM) software to build the 3D landscape model. The selected anchor frames are saved in a user-specified folder for SfM processing with the user’s preferred software. Unlike the ungulate worked example below, we do this without drone logs so don't have latitude, longitude, and elevation coordinates of the drone for each anchor frame.
-    - We used Pix4D with an educational license for SfM processing. To follow this notebook without Pix4D, find the generated outputs [here](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73). For high quality geo-referencing, ground control points should be incorporated at this point in the process with your chosen SfM software. We extract GCPs from visible features in google earth. (To find the overall observation location on external maps, 10.330651 N, 39.798676 E is the location of one of the large bushes).
+    - We used Pix4D with an educational license for SfM processing. To follow this notebook without Pix4D, find the generated outputs [here](https://doi.org/10.17617/3.EMRZGH). For high quality geo-referencing, ground control points should be incorporated at this point in the process with your chosen SfM software. We extract GCPs from visible features in google earth. (To find the overall observation location on external maps, 10.330651 N, 39.798676 E is the location of one of the large bushes).
         - We export the generated map products into the local_paths\['pix4D_folder'\].
     - We then [calculate](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/mapping/extract_drone_movement.ipynb) how the drone (camera) moves between anchor frames. We can then optionally [confirm](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/mapping/intersegment-differences.ipynb) that the local movement estimation was accurate. Combining this local drone movement with the SfM outputs we [project the detected animal tracks into the 3D landscape](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/mapping/drone_to_landscape.ipynb) and do some initial visualization of the tracks in the landscape.
     - We can additionally [visualize](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/mapping/visualize_tracks_figure.ipynb) the georeferenced tracks on the 3D landscapes exactly as visualized in the paper. (This code is more involved and maybe less intuitive compared to the visualization previously mentioned.)
@@ -83,7 +83,7 @@ Note that Step 2 and Step 4 require the use of 3rd party software to complete im
     - In this gelada example we don't use keypoint detection. Please see the ungulates worked example for information on this step.
 - **Step 6: Landscape Quantification**
     - Many important landscape features, like ground topology, elevation, and color, are already quantified during the structure from motion step. For examples of extracting more complex landscape features, see our example extracting possible game trails from the landscape in the ungulates worked examples below.
-To work through this example in sequence, [download the data](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73) and start [here](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/extract_annotation_images.ipynb).
+To work through this example in sequence, [download the data](https://doi.org/10.17617/3.EMRZGH) and start [here](https://github.com/benkoger/overhead-video-worked-examples/blob/main/geladas/detection/model-training/extract_annotation_images.ipynb).
 
 ## Worked Example 2: Kenyan Ungulates
 
@@ -95,7 +95,7 @@ The provided notebooks work through the steps listed below. The step numbers cor
 
 Note that Step 4 requires the use of 3rd party software to complete Structure-from-Motion tasks. We use [Pix4D](https://www.pix4d.com/product/pix4dmapper-photogrammetry-software), but there are other options available.
 - **Step 1: Video Recording**
-    - See the paper for information on appropriate video recording techniques. We provide the videos from the example Grevy's zebra observation [here](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73).
+    - See the paper for information on appropriate video recording techniques. We provide the videos from the example Grevy's zebra observation [here](https://doi.org/10.17617/3.EMRZGH).
 - **Step 2: Detection**
     - We start by [training](./ungulates/detection/model-training/train_ungulate_detection.ipynb) and then [evaluating](./ungulates/detection/model-training/precision-accuracy-curves.ipynb) a model that detects various ungulate species. We then use this model to [process an observation of Grevy's zebras](./ungulates/detection/inference/process-video.ipynb) that spans three overlapping drone flights.
     - Before processing, we [extract the individual video frames](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/detection/inference/extract_video_frames.ipynb) from the complete observation. These will be used throughout the pipeline, including during detection.
@@ -104,13 +104,13 @@ Note that Step 4 requires the use of 3rd party software to complete Structure-fr
     - We then use a [GUI](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/tracking/track_correction_GUI.ipynb) that lets us visually connect and correct the generated track segments.
 - **Step 4: Landscape Reconstruction and Geographic Coordinate Transformation**
     -  We first [extract anchor frames](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/get_anchor_frames.ipynb) from the complete observation that we use with structure from motion (SfM) software to build the 3D landscape model. The selected anchor frames are saved in a user-specified folder for SfM processing with the user’s preferred software. The latitude, longitude, and elevation coordinates of the drone for each anchor frame as recorded in the drone logs is saved as a .csv in the input format used by Pix4D.
-    - We used Pix4D with an educational license for SfM processing. To follow this notebook without Pix4D, find the generated outputs [here](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73). For high quality geo-referencing, ground control points should be incorporated at this point in the process with your chosen SfM software.
+    - We used Pix4D with an educational license for SfM processing. To follow this notebook without Pix4D, find the generated outputs [here](https://doi.org/10.17617/3.EMRZGH). For high quality geo-referencing, ground control points should be incorporated at this point in the process with your chosen SfM software.
     - We then [calculate](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/extract_drone_movement.ipynb) how the drone (camera) moves between anchor frames. We can then optionally [confirm](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/intersegment-differences.ipynb) that the local movement estimation was accurate. Combining this local drone movement with the SfM outputs we [project the detected animal tracks into the 3D landscape](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/drone_to_landscape.ipynb).
     - We can [visualize](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/mapping/visualize_tracks_figure.ipynb) the georeferenced tracks on the 3D landscapes.
 
 - **Step 5: Body-part Keypoint Detection**
     - We [extract square crops](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/postures/crop_out_tracks.ipynb) around each tracked individual. These crops can be used with one of many existing open source animal keypoint tracking softwares such as [DeepLabCut](http://www.mackenziemathislab.org/deeplabcut), [SLEAP](https://sleap.ai/), or [DeepPoseKit](https://github.com/jgraving/DeepPoseKit).
-    - We [provide](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73) complete keypoints for the observation previously generated by DeepPoseKit ([performance stats](https://elifesciences.org/articles/47994)) as well as a [page](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/postures/instructions_for_DeepLabCut.md) describing how to use DeepLabCut to train a new model to use for keypoint detection in the context of this method.
+    - We [provide](https://doi.org/10.17617/3.EMRZGH) complete keypoints for the observation previously generated by DeepPoseKit ([performance stats](https://elifesciences.org/articles/47994)) as well as a [page](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/postures/instructions_for_DeepLabCut.md) describing how to use DeepLabCut to train a new model to use for keypoint detection in the context of this method.
 
 - **Step 6: Landscape Quantification**
     - Many important landscape features, like ground topology, elevation, and color, are already quantified during the structure from motion step.
@@ -119,4 +119,4 @@ Note that Step 4 requires the use of 3rd party software to complete Structure-fr
         - See the notebooks for details on the training data and training regime used.
 
 
-To work through this example in sequence, [download the data](https://edmond.mpdl.mpg.de/privateurl.xhtml?token=9c1a978a-21f3-4843-bebe-40c296bffc73) and start [here](./ungulates/detection/model-training/train_ungulate_detection.ipynb).
+To work through this example in sequence, [download the data](https://doi.org/10.17617/3.EMRZGH) and start [here](./ungulates/detection/model-training/train_ungulate_detection.ipynb).

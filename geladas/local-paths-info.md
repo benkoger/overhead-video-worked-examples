@@ -17,6 +17,8 @@ The expected folder structure is:
 
 **figure_folder**: Path to folder where figures will be saved.
 
+**labelbox_folder**: Path to the folder where the JSON file exported from Labelbox is saved.
+
 **labelbox_key**: This isn't a path. It is the labelbox api key for the labelbox account being used. Can be found on the labelbox website in the users account area. 
 
 **overhead_functions_path**: This is the path to the folder called “functions” in this repository

@@ -1,0 +1,10 @@
+{"annotations_folder": "PATH",
+ "base_gelada": "PATH",
+ "detectron_path": "PATH",
+ "figure_folder": "PATH",
+ "labelbox_folder": "PATH",
+ "labelbox_key": "PATH",
+ "overhead_functions_path": "PATH",
+ "pix4d_folder": "PATH",
+ "videos_folder": "PATH"
+}

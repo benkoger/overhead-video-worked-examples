@@ -4,9 +4,9 @@
 <img src="https://github.com/benkoger/overhead-video-worked-examples/blob/main/pictures/tracks_on_map_observation088.png" height="200px">
 </p>
 
-This repository contains code and data for the worked examples described in Koger *et al.* (n.d.). Full descriptions of the examples are below; you can use the links there to navigate through the notebooks for each example and use the example datasets linked below to run the notebooks on existing data. Beyond using the provided data, we encourage researchers to use and modify the code to suit their own needs. If you find the code or the paper useful in your own studies, we ask that you cite this project:
+This repository contains code and data for the worked examples described in Koger *et al.* (2023). Full descriptions of the examples are below; you can use the links there to navigate through the notebooks for each example and use the example datasets linked below to run the notebooks on existing data. Beyond using the provided data, we encourage researchers to use and modify the code to suit their own needs. If you find the code or the paper useful in your own studies, we ask that you cite this project:
 
-Koger, B., Deshpande, A., Kerby, J.T., Graving, J.M., Costelloe, B.R., Couzin, I.D. Multi-animal behavioral tracking and environmental reconstruction using drones and computer vision in the wild.
+Koger, B., Deshpande, A., Kerby, J.T., Graving, J.M., Costelloe, B.R., Couzin, I.D. 2023. Quantifying the movement, behaviour and environmental context of group-living animals using drones and computer vision. *Journal of Animal Ecology*, 00, 1-15. [https://doi.org/10.1111/1365-2656.13904](https://doi.org/10.1111/1365-2656.13904)
 
 ## Getting Started
 ### Data availability
@@ -43,7 +43,7 @@ Each project has a demo-local-paths.json with dummy paths as an example, the act
 ## Worked Example 1: Gelada Monkeys
 This example processes aerial video footage of gelada monkeys (*Theropithecus gelada*). The recordings were provided by the [Guassa Gelada Research Project](http://anthro.fullerton.edu/gelada/), and were collected between October 16, 2019 and February 28, 2020 at the Guassa Community Conservation Area in the Ethiopian highlands. Our analyses here focus on a single video observation. Geladas were recorded with a DJI Mavic 2 Pro.
 
-In this example, we start with the raw videos and build an annotated dataset from scratch. The provided notebooks work through the steps listed below. The step numbers correspond to the step numbers in the main text and supplement of Koger *et al.* (n.d.).
+In this example, we start with the raw videos and build an annotated dataset from scratch. The provided notebooks work through the steps listed below. The step numbers correspond to the step numbers in the main text and supplement of Koger *et al.* (2023).
 
 Note that Step 2 and Step 4 require the use of 3rd party software to complete image annotation and Structure-from-Motion (SfM) tasks. We use [Labelbox](https://labelbox.com/) for annotation and [Pix4d](https://www.pix4d.com/product/pix4dmapper-photogrammetry-software) for SfM, but there are other options available.
 - **Step 1: Video Recording**
@@ -91,7 +91,7 @@ This example processes aerial video footage of African ungulate herds. We record
 
 In this example, we start with a pre-annotated dataset (we previously annotated it with now-outdated software). For an example of building an annotated dataset from scratch, please see the gelada example. Our annotated image set contains five classes: zebra, impala, buffalo, waterbuck, and other spanning 1913 annotated video frames. See the main text of the paper or [annotated_data_stats.ipynb](https://github.com/benkoger/overhead-video-worked-examples/blob/main/ungulates/detection/model-training/annotated_data_stats.ipynb) for more details on the annotated dataset.
 
-The provided notebooks work through the steps listed below. The step numbers correspond to the step numbers in the main text and supplement of Koger *et al.* (n.d.).
+The provided notebooks work through the steps listed below. The step numbers correspond to the step numbers in the main text and supplement of Koger *et al.* (2023).
 
 Note that Step 4 requires the use of 3rd party software to complete Structure-from-Motion tasks. We use [Pix4D](https://www.pix4d.com/product/pix4dmapper-photogrammetry-software), but there are other options available.
 - **Step 1: Video Recording**
